@@ -651,6 +651,45 @@ mark.ex-m{background:var(--accent-soft);color:var(--accent);padding:0 2px;border
   .ex-hero h2{font-size:21px}
 }
 .ex-ladder .pill{align-self:flex-start}.ph .pill{align-self:center}
+/* ---------- 对话：过程讲解 + 数字人 ---------- */
+.chat.has-talk{grid-template-columns:240px minmax(0,1fr) 320px}
+.talk{border-left:1px solid var(--line);display:flex;flex-direction:column;gap:12px;padding:16px;overflow:auto;background:linear-gradient(180deg,var(--accent-soft),var(--surface) 220px)}
+.talk-top{display:flex;align-items:center;gap:12px}
+.talk-id b{display:block;font-size:15px}.talk-id span{font-size:12px;color:var(--muted)}
+.talk-top .ic-btn{margin-left:auto;font-size:16px}
+.dh{position:relative;width:84px;height:84px;flex:none;animation:dhFloat 4s ease-in-out infinite}
+.dh svg{width:100%;height:100%;display:block;position:relative;z-index:1}
+.dh-bg{fill:var(--surface)}
+.dh-ring{position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--accent);opacity:.25}
+.dh.speaking .dh-ring{animation:dhRing 1.2s ease-out infinite;opacity:.6}
+.dh-eyes{animation:dhBlink 4.5s infinite;transform-origin:60px 56px}
+.dh-mouth{transform-origin:60px 68px;transform:scaleY(.6)}
+.dh.speaking .dh-mouth{animation:dhTalk .26s ease-in-out infinite alternate}
+@keyframes dhFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes dhBlink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes dhTalk{from{transform:scaleY(.4) scaleX(.9)}to{transform:scaleY(1.9) scaleX(1.05)}}
+@keyframes dhRing{from{transform:scale(1);opacity:.6}to{transform:scale(1.18);opacity:0}}
+.talk-bubble{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.65;min-height:72px;box-shadow:var(--shadow)}
+.talk-bubble::before{content:"";position:absolute;top:-7px;left:34px;width:12px;height:12px;background:var(--surface);border-left:1px solid var(--line);border-top:1px solid var(--line);transform:rotate(45deg)}
+.talk-q{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.talk-steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0;position:relative}
+.talk-steps li{display:flex;gap:10px;padding:8px 0;position:relative;opacity:.45;transition:opacity .3s}
+.talk-steps li:not(:last-child)::after{content:"";position:absolute;left:15px;top:38px;bottom:-6px;width:2px;background:var(--line)}
+.talk-steps li.done{opacity:.9}.talk-steps li.done::after{background:var(--accent)}
+.talk-steps li.cur{opacity:1}
+.talk-steps .ic{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-size:15px;background:var(--surface2);border:2px solid var(--line);flex:none;position:relative;z-index:1}
+.talk-steps li.done .ic{background:var(--accent);border-color:var(--accent);color:var(--accent-fg);font-weight:700;font-size:13px}
+.talk-steps li.cur .ic{border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 5px var(--accent-soft);animation:exPulse 1.6s ease infinite}
+.talk-steps li.hu.cur .ic{border-color:var(--warn);box-shadow:0 0 0 5px var(--warn-soft)}
+.talk-steps b{display:block;font-size:13px}.talk-steps small{display:block;font-size:12px;color:var(--muted)}
+.talk-steps li.cur b{color:var(--accent)}
+.talk-done{font-size:13px;color:var(--ok);font-weight:600}.talk-done a{color:var(--accent)}
+.talk-tip{font-size:13px;color:var(--muted)}
+.talk-sw{display:inline-flex;align-items:center;gap:6px}
+@media (max-width:1100px){.chat.has-talk{grid-template-columns:200px minmax(0,1fr) 280px}}
+@media (max-width:900px){.chat.has-talk{grid-template-columns:minmax(0,1fr)}.talk{border-left:0;border-top:1px solid var(--line)}.chat.has-talk .chat-list{display:flex;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line)}.chat.has-talk .chat-list button{flex:none;width:auto;border-bottom:0}.chat.has-talk{height:auto}.chat.has-talk .msgs{min-height:320px}}
+@media (prefers-reduced-motion:reduce){.dh,.dh *,.talk-steps .ic{animation:none!important}}
+.ph .grow{flex:1 1 260px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -868,7 +907,7 @@ function renderApp(){
   $('#switchRole').onclick=logout;
   renderPage();
 }
-function go(p,extra){exStop();exAutoStop();exFlowStop();if(p==='explain')S.exAnim=true;S.page=p;Object.assign(S,extra||{});$('#nav').classList.remove('open');renderApp();$('#main').scrollTop=0;window.scrollTo(0,0)}
+function go(p,extra){try{if(p!=='chat'&&window.speechSynthesis)speechSynthesis.cancel()}catch(e){};exStop();exAutoStop();exFlowStop();if(p==='explain')S.exAnim=true;S.page=p;Object.assign(S,extra||{});$('#nav').classList.remove('open');renderApp();$('#main').scrollTop=0;window.scrollTo(0,0)}
 $('#menuBtn').onclick=()=>$('#nav').classList.toggle('open');
 
 function renderPage(){
@@ -941,7 +980,7 @@ function pChat(){
   const msgs = S.chats[a.id] || [{r:'a',t:`你好，我是「${a.name}」。${a.desc}`}];
   const live = !!LLM.key;
   return ph('对话','选择一个智能体开始。回答由 Dify 编排，涉及写操作时会转审批。',
-      `<span class="pill ${live?'p-ok':'p-mute'}">${live?'DeepSeek 已接入 · '+esc(LLM.model):'演示模式（未配置模型）'}</span><button class="btn" type="button" id="llmBtn">${ico('cpu')}模型设置</button>`)+
+      `<span class="pill ${live?'p-ok':'p-mute'}">${live?'DeepSeek 已接入 · '+esc(LLM.model):'演示模式（未配置模型）'}</span><button class="btn ${S.talk.on?'pri':''}" type="button" id="talkToggle">🧑‍💼 数字人讲解：${S.talk.on?'开':'关'}</button><button class="btn" type="button" id="llmBtn">${ico('cpu')}模型设置</button>`)+
     (S.llmOpen?`<div class="panel" style="margin-bottom:16px"><div class="panel-h"><h3>接入 DeepSeek</h3><span class="r" style="font-size:12px;color:var(--muted)">Key 只保存在你这台电脑的浏览器里，不会写进页面</span></div>
       <form class="panel-b" id="llmForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end">
         <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)">API Key<input id="llmKey" type="password" autocomplete="off" placeholder="sk-…" value="${esc(LLM.key)}" style="border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface);color:var(--fg)"></label>
@@ -950,10 +989,10 @@ function pChat(){
         <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" type="submit">保存</button><button class="btn" type="button" id="llmTest">测试连接</button>${live?'<button class="btn danger" type="button" id="llmClear">清除 Key</button>':''}</div>
         <div id="llmMsg" style="grid-column:1/-1;font-size:12px;color:var(--muted)">接口地址填 DeepSeek 官方地址，或内网部署的 OpenAI 兼容网关（如 OneAPI）。调用失败时自动回落到演示回答。</div>
       </form></div>`:'')+
-   `<div class="panel chat"><div class="chat-list">${list.map(x=>`<button type="button" class="${x.id===a.id?'on':''}" data-pick="${x.id}"><div class="c-ic" style="background:${x.c}">${x.ch}</div><div style="min-width:0"><b>${x.name}</b><small>${x.kind} · ${x.lv}</small></div></button>`).join('')}</div>
+   `<div class="panel chat ${S.talk.on?'has-talk':''}"><div class="chat-list">${list.map(x=>`<button type="button" class="${x.id===a.id?'on':''}" data-pick="${x.id}"><div class="c-ic" style="background:${x.c}">${x.ch}</div><div style="min-width:0"><b>${x.name}</b><small>${x.kind} · ${x.lv}</small></div></button>`).join('')}</div>
     <div class="chat-main"><div class="msgs" id="msgs">${msgs.map(m=>`<div class="msg ${m.r}">${esc(m.t)}${m.src?`<span class="src">${esc(m.src)}</span>`:''}</div>`).join('')}</div>
       ${a.demo?`<div class="suggest">${a.demo.map((d,i)=>`<button type="button" data-ask="${i}">${esc(d[0])}</button>`).join('')}</div>`:''}
-      <form class="composer" id="composer"><input id="chatIn" placeholder="向「${esc(a.name)}」提问…" autocomplete="off"><button class="btn pri" type="submit">发送</button></form></div></div>`;
+      <form class="composer" id="composer"><input id="chatIn" placeholder="向「${esc(a.name)}」提问…" autocomplete="off"><button class="btn pri" type="submit">发送</button></form></div>${S.talk.on?talkPanel():''}</div>`;
 }
 /* ---------- DeepSeek 接入（OpenAI 兼容接口） ---------- */
 const DEFAULT_KEY = ''; // 不在页面里写死 Key：在「对话 → 模型设置」中填写，只保存在本机浏览器
@@ -1148,6 +1187,7 @@ function bind(){
   const M=$('#main');
   M.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
   if(S.page==='explain') bindExplain(M);
+  if(S.page==='chat'){ talkBind(); const tt=$('#talkToggle'); if(tt) tt.onclick=()=>{S.talk.on=!S.talk.on;talkSave();if(!S.talk.on){S.talk.run=null;try{speechSynthesis.cancel()}catch(e){}}renderPage()}; }
   M.querySelectorAll('[data-chat]').forEach(b=>b.onclick=()=>go('chat',{chatAgent:b.dataset.chat}));
   M.querySelectorAll('[data-toast]').forEach(b=>b.onclick=()=>toast(b.dataset.toast));
   M.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{S.agentTab=b.dataset.tab;renderPage()});
@@ -1813,6 +1853,100 @@ function exHitl(){
    ${exCut(f,'<div class="ex-g2" style="align-items:start">','<div class="panel panel-b" style="margin-top:14px')}
    ${exMore(exCut(f,'<div class="panel panel-b" style="margin-top:14px'),'什么是防重编号？')}`;
 }
+
+/* ================= 对话过程讲解 + 数字人（演示） ================= */
+S.talk = {on:true, voice:true, run:null};
+try{ const t=JSON.parse(localStorage.getItem('qzt-talk')||'null'); if(t){S.talk.on=t.on!==false;S.talk.voice=t.voice!==false;} }catch(e){}
+function talkSave(){ try{localStorage.setItem('qzt-talk',JSON.stringify({on:S.talk.on,voice:S.talk.voice}))}catch(e){} }
+const TALK_HELLO = '你好，我是数字讲解员小遥。你在左边提问后，我会一步一步讲给你听：智能体正在做什么、用了哪些数据和工具。';
+
+function talkSteps(a){
+  const r=role(), tools=a.tools||[];
+  const kb=tools.filter(t=>t.includes('知识库'));
+  const sys=tools.filter(t=>t.includes('Bridge')).map(t=>t.replace('Bridge · ',''));
+  const alg=tools.filter(t=>!t.includes('知识库')&&!t.includes('Bridge'));
+  const st=[{ic:'🧭',n:'听懂问题',d:`识别意图，交给「${a.name}」`,say:`我先理解你的问题。这件事交给「${a.name.replace(/ · .*/,'')}」来处理。`},
+    {ic:'🪪',n:'核对身份与权限',d:`${r.user} · ${r.name} · 权限通过`,say:`然后确认你的身份：${r.name}${r.user}，有权限使用这个智能体，也只能看到本岗位的数据。`}];
+  if(kb.length) st.push({ic:'📚',n:'检索知识库',d:'命中 3 份相关文档，回答将附出处',say:'接着到公司知识库里查找相关的制度和资料，回答会标注出处。'});
+  if(sys.length) st.push({ic:'🔌',n:'读取业务数据',d:`经 Bridge 网关只读：${sys.join('、')}`,say:`通过 Bridge 安全网关读取${sys.join('、')}的数据。这一步只读，不会改动任何业务数据。`});
+  if(alg.length) st.push({ic:'🧮',n:'调用专业工具',d:alg.join('、'),say:`需要精确计算的部分，交给${alg[0]}来算，而不是让大模型去猜。`});
+  st.push({ic:'💬',n:'组织回答',d:LLM.key?`DeepSeek · ${LLM.model}`:'私有化大模型生成，附数据来源',say:'最后由大模型把结果整理成通俗的回答。'});
+  if(a.lv==='L2'||a.lv==='L3') st.push({ic:'✋',n:'等待人工确认',d:a.lv==='L3'?'写入业务系统前必须审批':'方案由你选择后再执行',hu:true,say:a.lv==='L3'?'注意：要写入业务系统的操作，我只做准备，必须经过你复核和主管审批才会执行。':'我给出的是候选方案，由你来选择，确认后才会提交执行。'});
+  return st;
+}
+function talkAvatar(speaking){
+  return `<div class="dh ${speaking?'speaking':''}" aria-hidden="true"><svg viewBox="0 0 120 120">
+    <defs><linearGradient id="dhSuit" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3b6ff0"/><stop offset="1" stop-color="#2450c8"/></linearGradient>
+      <linearGradient id="dhHair" x1="0" x2="1"><stop offset="0" stop-color="#2a2f45"/><stop offset="1" stop-color="#3d4462"/></linearGradient></defs>
+    <circle cx="60" cy="60" r="58" class="dh-bg"/>
+    <path d="M22 120c2-22 17-34 38-34s36 12 38 34z" fill="url(#dhSuit)"/>
+    <path d="M50 88l10 12 10-12" fill="#fff"/><path d="M57 92h6l-1 14h-4z" fill="#f0a93a"/>
+    <rect x="52" y="72" width="16" height="16" rx="6" fill="#f3c9a8"/>
+    <ellipse cx="60" cy="54" rx="24" ry="27" fill="#f8d7bd"/>
+    <path d="M35 52c-2-20 10-32 26-32 15 0 27 10 25 32-4-9-10-14-18-16-8 6-20 9-33 16z" fill="url(#dhHair)"/>
+    <path d="M35 52c-3 10-2 22 3 30l3-24z M85 52c3 10 2 22-3 30l-3-24z" fill="url(#dhHair)"/>
+    <g class="dh-eyes"><ellipse cx="50" cy="56" rx="3" ry="3.6" fill="#2a2f45"/><ellipse cx="70" cy="56" rx="3" ry="3.6" fill="#2a2f45"/>
+      <circle cx="51" cy="55" r="1" fill="#fff"/><circle cx="71" cy="55" r="1" fill="#fff"/></g>
+    <path d="M45 49q5-3 10 0M65 49q5-3 10 0" stroke="#2a2f45" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="44" cy="64" rx="4" ry="2.2" fill="#f2a7a0" opacity=".5"/><ellipse cx="76" cy="64" rx="4" ry="2.2" fill="#f2a7a0" opacity=".5"/>
+    <ellipse class="dh-mouth" cx="60" cy="68" rx="5" ry="2.2" fill="#c8524f"/>
+    <path d="M30 56c0-18 13-30 30-30s30 12 30 30" stroke="#5b8cff" stroke-width="2.4" fill="none"/><rect x="24" y="52" width="9" height="14" rx="4" fill="#5b8cff"/><path d="M28 66q2 8 14 8" stroke="#5b8cff" stroke-width="2" fill="none"/><circle cx="43" cy="74" r="2.2" fill="#5b8cff"/>
+  </svg><span class="dh-ring"></span></div>`;
+}
+function talkPanel(){
+  const R=S.talk.run, steps=R?R.steps:[], i=R?R.i:-1;
+  const say = R ? (R.say||'') : TALK_HELLO;
+  return `<aside class="talk" id="talkPanel">
+    <div class="talk-top">${talkAvatar(R&&R.speaking)}<div class="talk-id"><b>小遥</b><span>数字讲解员</span></div>
+      <button class="ic-btn" type="button" id="talkVoice" title="${S.talk.voice?'关闭语音':'开启语音'}" aria-label="${S.talk.voice?'关闭语音':'开启语音'}">${S.talk.voice?'🔊':'🔇'}</button></div>
+    <div class="talk-bubble" id="talkSay">${esc(say)}</div>
+    ${R?`<div class="talk-q">问题：${esc(R.q)}</div><ol class="talk-steps">${steps.map((s,k)=>`<li class="${k<i||R.done?'done':k===i?'cur':''} ${s.hu?'hu':''}"><span class="ic">${k<i||R.done?'✓':s.ic}</span><div><b>${s.n}</b><small>${esc(s.d)}</small></div></li>`).join('')}</ol>
+      ${R.done?`<div class="talk-done">✓ 完成 · 共 ${steps.length} 步${steps.some(s=>s.hu)?' · <a href="#" data-go-approve>去审批中心</a>':''}</div>`:''}`
+     :`<div class="talk-tip">试试点击左侧下方的推荐问题 👇</div>`}
+  </aside>`;
+}
+function talkPaint(){ const p=$('#talkPanel'); if(!p) return false; p.outerHTML=talkPanel(); talkBind(); return true; }
+function talkBind(){
+  const v=$('#talkVoice'); if(v) v.onclick=()=>{S.talk.voice=!S.talk.voice; talkSave(); if(!S.talk.voice) try{speechSynthesis.cancel()}catch(e){} talkPaint()};
+  const g=document.querySelector('[data-go-approve]'); if(g) g.onclick=e=>{e.preventDefault(); go(myApprovals().length?'approve':'home')};
+}
+let talkVoiceObj=null;
+function talkPickVoice(){ try{ const vs=speechSynthesis.getVoices(); talkVoiceObj = vs.find(v=>/zh[-_]CN/i.test(v.lang)&&/Xiaoxiao|Female|Tingting|女/i.test(v.name)) || vs.find(v=>/zh[-_]CN/i.test(v.lang)) || vs.find(v=>/^zh/i.test(v.lang)) || null; }catch(e){} }
+try{ talkPickVoice(); speechSynthesis.onvoiceschanged=talkPickVoice; }catch(e){}
+function talkSpeak(text,token){
+  return new Promise(res=>{
+    const R=S.talk.run; const min=Math.max(1500, text.length*120);
+    let done=false; const fin=()=>{ if(done) return; done=true; if(R){R.speaking=false; if(S.talk.run===R&&R.token===token){const d=document.querySelector('#talkPanel .dh'); if(d) d.classList.remove('speaking')}} res(); };
+    if(R){R.speaking=true; const d=document.querySelector('#talkPanel .dh'); if(d) d.classList.add('speaking')}
+    if(S.talk.voice && 'speechSynthesis' in window){
+      try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang='zh-CN'; u.rate=1.08; if(talkVoiceObj) u.voice=talkVoiceObj;
+        u.onend=fin; u.onerror=()=>setTimeout(fin,min); speechSynthesis.speak(u); setTimeout(fin, text.length*320+2500); }catch(e){ setTimeout(fin,min) }
+    } else setTimeout(fin,min);
+  });
+}
+function talkType(text){
+  const el=$('#talkSay'); if(!el) return; el.textContent=''; let k=0;
+  const step=()=>{ if(!document.body.contains(el)) return; el.textContent=text.slice(0,++k); if(k<text.length) setTimeout(step,28) }; step();
+}
+const _sendChatCore = sendChat;
+sendChat = async function(text, demoIdx){
+  if(!S.talk.on) return _sendChatCore(text, demoIdx);
+  const a=AGENTS.find(x=>x.id===S.chatAgent);
+  const arr = S.chats[a.id] || (S.chats[a.id]=[{r:'a',t:`你好，我是「${a.name}」。${a.desc}`}]);
+  const u={r:'u',t:text}, slot={r:'a',t:'正在处理，讲解员小遥正在逐步说明…',pending:true}; arr.push(u,slot);
+  const token=Math.random(); S.talk.run={token,q:text,agent:a.id,steps:talkSteps(a),i:0,say:'',done:false};
+  renderPage(); scrollMsgs();
+  const R=S.talk.run, alive=()=>S.talk.run===R && S.page==='chat';
+  for(let k=0;k<R.steps.length;k++){
+    if(!alive()) break;
+    R.i=k; R.say=R.steps[k].say; talkPaint(); talkType(R.say);
+    await talkSpeak(R.say,token);
+  }
+  arr.splice(arr.indexOf(slot),1); arr.splice(arr.indexOf(u),1);
+  if(alive()){ R.done=true; R.i=R.steps.length; R.say='处理完成，回答已经显示在左边。你可以继续追问。'; }
+  await _sendChatCore(text, demoIdx);
+  if(alive()){ talkPaint(); talkType(R.say); talkSpeak(R.say,token); }
+};
 
 /* 启动 */
 S.role ? renderApp() : renderLogin();
