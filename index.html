@@ -707,6 +707,14 @@ mark.ex-m{background:var(--accent-soft);color:var(--accent);padding:0 2px;border
 .talk-note{font-size:12px;color:var(--muted);background:var(--surface2);border-radius:8px;padding:8px 10px;line-height:1.55}
 .talk{overflow:hidden}.talk > *{flex:none}.talk > .talk-scroll{flex:1 1 auto;overflow:auto}@media (max-width:900px){.talk{overflow:visible}.talk > .talk-scroll{overflow:visible}}
 .talk > .talk-cfg{flex:0 1 auto;overflow:auto;min-height:120px}
+.talk-sug{display:flex;flex-direction:column;gap:6px}
+.talk-sug button{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 10px;font-size:13px}
+.talk-sug button:hover{border-color:var(--accent);color:var(--accent)}
+.talk-disp{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px}
+.talk-disp > span{color:var(--muted)}
+.talk-disp em{font-style:normal;display:inline-flex;align-items:center;gap:5px;padding:2px 8px 2px 3px;border-radius:999px;background:var(--surface);border:1px solid var(--line);animation:exUp .4s ease both}
+.talk-disp em i{font-style:normal;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;background:var(--c);color:#fff;font-size:10px;font-weight:700}
+.talk-disp em.no{opacity:.6;text-decoration:line-through}.talk-disp em.no i{background:var(--bad)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -722,6 +730,11 @@ mark.ex-m{background:var(--accent-soft);color:var(--accent);padding:0 2px;border
 
 <script>
 /* ================= 模拟数据 ================= */
+const ORD_EX = {
+  wx:'① 监听：微信群「安亭项目对接」09:05 收到新消息\n② 识别：判定为订单（追加需求）\n③ 提取字段：\n  · 客户：某主机厂 · 安亭总装 ✓\n  · 料号：B-1180 门板饰条 ✓（料号库存在）\n  · 数量：200 套 ✓\n  · 送达地点：安亭总装 3 号门 ✓\n  · 送达时间：缺失 ✕（“老规矩”无法确定）\n④ 校验结果：缺项，已拦截，不进入写入\n⑤ 已起草回复：“王经理您好，请问明天几点前送到 3 号门？”点击即可发送\n⑥ 客户补齐后 → 订单专员复核 → 审批通过 → 写入 OWTB（防重编号 idem-ord-…）',
+  mail:'① 监听：邮箱收到「11/24 安亭总装补货」\n② 识别：判定为补货订单，含 2 个料号\n③ 提取字段：\n  · 客户：某主机厂 · 安亭总装 ✓\n  · 料号 1：C-3305 仪表板骨架 × 80 件 ✓\n  · 料号 2：D-0912 线束 × 300 根 ✓\n  · 送达：安亭总装 1 号门，11/24 10:00 前 ✓\n④ 校验：字段齐全 · 与客户档案一致 · 7 天内无重复订单\n⑤ 已进入复核队列，订单专员核对后提交审批\n⑥ 审批通过 → 写入 OWTB：SO-20261121-0110 → 自动回执客户',
+  photo:'① 上传：张强用手机拍摄手写提货单\n② OCR + 视觉模型识别手写文字\n③ 提取字段：\n  · 提货点：嘉定零部件园 ✓\n  · 料号：E-7781 座椅滑轨 ✓\n  · 数量：60 件 ⚠（手写“6O”，置信度 82%）\n  · 提货时间：今天 14:00–16:00 ✓\n④ 校验：数量置信度低，标黄提示人工核对\n⑤ 复核界面左右对照原图，专员确认数量为 60\n⑥ 确认后生成提货任务，同步给短驳路线优化排车',
+};
 const ROLES = [
   {id:'sales',name:'销售经理',dept:'销售中心 · AR',color:'#2f6bf0',user:'李明',desc:'商机评估、客户跟进、报价与投标合规',group:'前端业务'},
   {id:'presales',name:'售前方案',dept:'解决方案部 · SR',color:'#7a5af5',user:'周静',desc:'需求调研、物流规划方案、物流仿真',group:'前端业务'},
@@ -735,8 +748,8 @@ const ROLES = [
 const C = {blue:'#2f6bf0',teal:'#0e9f8a',vio:'#7a5af5',orange:'#e0761b',pink:'#c2477a',sky:'#3b8fd6',navy:'#334a75',green:'#17a36b',gray:'#8a94a8'};
 // status: run 运行中 / pilot 试点中 / plan 二期规划
 const AGENTS = [
-  {id:'xy',name:'小遥 · 通用助手',ch:'遥',c:C.blue,v:'0.9.9',st:'run',kind:'对话',lv:'L1',desc:'日常问答、写作与行程安排，可调用公司制度知识库。',owner:'qunzhitong-core',calls:54190,roles:['*'],tools:['知识库'],def:true,
-    demo:[['帮我写一封延期发货的致歉邮件','好的，以下是草稿：\n\n尊敬的客户：\n因上游零部件到货延迟，贵司订单 SO-20261121-0087 预计延后 1 天送达（11 月 23 日上午）。我们已安排优先装车，并将在发运后第一时间同步运单号。给您带来不便，深表歉意。\n\n需要我改成更正式的语气吗？']]},
+  {id:'xy',name:'小遥 · 统一入口',ch:'遥',c:C.blue,v:'0.9.9',st:'run',kind:'对话',lv:'L1',desc:'智能体统一入口：听懂你的需求，自动调度订单、调度、库存、制度等各个智能体，并汇总结果。',owner:'qunzhitong-core',calls:54190,roles:['*'],tools:['调度全部智能体','知识库'],def:true,
+    demo:[['B-1180 明天能送到安亭吗？',''],['今天下午嘉定到安亭这 18 单短驳怎么排？',''],['出差住宿报销标准是多少？',''],['帮我写一封延期发货的致歉邮件','好的，以下是草稿：\n\n尊敬的客户：\n因上游零部件到货延迟，贵司订单 SO-20261121-0087 预计延后 1 天送达（11 月 23 日上午）。我们已安排优先装车，并将在发运后第一时间同步运单号。给您带来不便，深表歉意。\n\n需要我改成更正式的语气吗？']]},
   {id:'sop',name:'制度与 SOP 问答',ch:'规',c:C.gray,v:'1.2.0',st:'run',kind:'知识库',lv:'L1',desc:'公司制度、作业 SOP、安全规范的检索问答，回答附带出处。',owner:'qunzhitong-core',calls:21877,roles:['*'],tools:['知识库'],
     demo:[['危险品车辆进厂需要哪些手续？','根据《厂区车辆管理 SOP v3.2》第 4.3 条：\n1. 提前 24 小时在门禁系统登记；\n2. 司机出示危险品运输从业资格证；\n3. 车辆配备灭火器两具并通过安检；\n4. 由安全员陪同进入指定卸货区。','来源：厂区车辆管理 SOP v3.2 · 第 4.3 条']]},
   {id:'opp',name:'商机初评助手',ch:'商',c:C.blue,v:'1.0.3',st:'run',kind:'知识库',lv:'L1',desc:'根据客户与项目信息给出商机评分、风险点和跟进建议。',owner:'qunzhitong-core',calls:3120,roles:['sales'],tools:['知识库','CRM 只读'],batch:'一期',
@@ -749,7 +762,8 @@ const AGENTS = [
   {id:'survey',name:'需求调研助手',ch:'调',c:C.vio,v:'0.6.0',st:'run',kind:'工作流',lv:'L1',desc:'生成调研提纲、整理访谈记录，并输出结构化需求清单。',owner:'qunzhitong-core',calls:932,roles:['presales'],tools:['知识库']},
   {id:'plan',name:'物流规划方案专家',ch:'规',c:C.blue,v:'1.2.6',st:'run',kind:'Agent',lv:'L1',desc:'仓网布局、干线路径与库存分布的规划测算与多方案比选。',owner:'qunzhitong-core',calls:6240,roles:['presales'],tools:['OR-Tools 求解器','知识库'],batch:'一期'},
   {id:'sim',name:'物流仿真专家',ch:'仿',c:C.gray,v:'0.3.0',st:'plan',kind:'长任务',lv:'L1',desc:'对规划方案做仓内作业和运输仿真，评估瓶颈与产能。二期按需接入 DSH。',owner:'qunzhitong-core',calls:0,roles:['presales'],tools:['DSH（二期）'],batch:'二期'},
-  {id:'ord',name:'多模态订单自动入库',ch:'单',c:C.teal,v:'1.0.0',st:'pilot',kind:'工作流',lv:'L3',desc:'邮件、微信、照片自动识别为订单事件，缺项拦截，复核后写入 OWTB。',owner:'bridge@qunzhitong.local',calls:12408,roles:['order','dispatch'],tools:['OCR 插件','Bridge · OWTB'],batch:'试点一',page:'orderin'},
+  {id:'ord',name:'多模态订单自动入库',ch:'单',c:C.teal,v:'1.0.0',st:'pilot',kind:'工作流',lv:'L3',desc:'邮件、微信、照片自动识别为订单事件，缺项拦截，复核后写入 OWTB。',owner:'bridge@qunzhitong.local',calls:12408,roles:['order','dispatch'],tools:['OCR 插件','Bridge · OWTB'],batch:'试点一',page:'orderin',
+    demo:[['识别这条微信订单：王经理：明天再加 200 套门板饰条 B-1180，送安亭总装 3 号门，还是老规矩。',ORD_EX.wx,'示例 · 微信群消息'],['识别这封邮件订单：主题“11/24 安亭总装补货”，料号 C-3305 仪表板骨架 80 件、D-0912 线束 300 根，11/24 10:00 前送达安亭总装 1 号门。',ORD_EX.mail,'示例 · 邮件'],['识别这张手写提货单照片：嘉定零部件园 E-7781 座椅滑轨 6O 件，14:00–16:00 提货。',ORD_EX.photo,'示例 · 照片 OCR']]},
   {id:'split',name:'智能拆单',ch:'拆',c:C.teal,v:'0.5.2',st:'run',kind:'工作流',lv:'L2',desc:'按仓库库存与线路匹配给出拆单建议，订单专员确认后执行。',owner:'bridge@qunzhitong.local',calls:2210,roles:['order'],tools:['规则引擎','Bridge · WMS']},
   {id:'track',name:'订单状态跟踪',ch:'踪',c:C.sky,v:'1.0.4',st:'run',kind:'对话',lv:'L1',desc:'用自然语言查询订单、运单和签收状态，支持批量导出。',owner:'bridge@qunzhitong.local',calls:9732,roles:['order','sales','dispatch'],tools:['Bridge · OWTB','Bridge · TMS'],
     demo:[['SO-20261121-0087 到哪了？','订单 SO-20261121-0087（某主机厂安亭总装）\n· 11-21 08:12 昆山 2 号仓出库\n· 11-21 09:40 运单 TMS-558213 已发车，车牌 苏E·7K216\n· 预计 11:05 到达，当前准时概率 92%','数据：OWTB / TMS 实时查询']]},
@@ -992,7 +1006,7 @@ function card(a){
 /* ---------- 对话 ---------- */
 function pChat(){
   const list = myAgents().filter(a=>S.enabled[a.id]);
-  if(!S.chatAgent || !list.find(a=>a.id===S.chatAgent)) S.chatAgent = (list.find(a=>a.demo && !a.roles.includes('*'))||list[0]).id;
+  if(!S.chatAgent || !list.find(a=>a.id===S.chatAgent)) S.chatAgent = (list.find(a=>a.id==='xy')||list[0]).id;
   const a = AGENTS.find(x=>x.id===S.chatAgent);
   const msgs = S.chats[a.id] || [{r:'a',t:`你好，我是「${a.name}」。${a.desc}`}];
   const live = !!LLM.key;
@@ -1877,7 +1891,8 @@ const VC = {engine:'browser', bvoice:'', azKey:'', azRegion:'eastasia', azVoice:
 try{ const t=JSON.parse(localStorage.getItem('qzt-talk')||'null'); if(t){S.talk.on=t.on!==false;S.talk.voice=t.voice!==false;} }catch(e){}
 try{ const v=JSON.parse(localStorage.getItem('qzt-voice')||'null'); if(v) Object.assign(VC,v); }catch(e){}
 function talkSave(){ try{localStorage.setItem('qzt-talk',JSON.stringify({on:S.talk.on,voice:S.talk.voice}));localStorage.setItem('qzt-voice',JSON.stringify(VC))}catch(e){} }
-const TALK_HELLO = '你好，我是数字讲解员小遥。你可以在左边提问，也可以直接在下面跟我说话，我会一步一步讲给你听。';
+const TALK_HELLO = '你好，我是小遥。有什么事直接跟我说，我会帮你找到合适的智能体去办，并告诉你每一步在做什么。';
+const ORCH_SUG = ['B-1180 明天能送到安亭吗？','识别这条微信订单：王经理：明天再加 200 套门板饰条 B-1180，送安亭总装 3 号门','今天下午嘉定到安亭这 18 单短驳怎么排？','出差住宿报销标准是多少？'];
 const AZ_VOICES = [['zh-CN-XiaoxiaoNeural','晓晓 · 温柔女声'],['zh-CN-XiaoyiNeural','晓伊 · 活泼女声'],['zh-CN-XiaochenNeural','晓辰 · 自然女声'],['zh-CN-YunxiNeural','云希 · 青年男声'],['zh-CN-YunyangNeural','云扬 · 新闻播音']];
 
 function talkSteps(a){
@@ -1970,16 +1985,16 @@ function talkPanel(){
   const say = R ? (R.say||'') : TALK_HELLO;
   const SR = window.SpeechRecognition||window.webkitSpeechRecognition;
   return `<aside class="talk" id="talkPanel">
-    <div class="talk-top">${talkAvatar(R&&R.speaking)}<div class="talk-id"><b>小遥</b><span>数字讲解员${talkNatural()?' · 拟人音色':''}</span></div>
+    <div class="talk-top">${talkAvatar(R&&R.speaking)}<div class="talk-id"><b>小遥</b><span>智能体统一入口${talkNatural()?' · 拟人音色':''}</span></div>
       <div class="talk-btns"><button class="ic-btn" type="button" id="talkVoice" title="${S.talk.voice?'静音':'开启声音'}" aria-label="${S.talk.voice?'静音':'开启声音'}">${S.talk.voice?'🔊':'🔇'}</button><button class="ic-btn" type="button" id="talkCfgBtn" title="声音设置" aria-label="声音设置">⚙️</button></div></div>
     ${S.talk.cfgOpen?talkCfg():''}
     <div class="talk-bubble" id="talkSay">${esc(say)}</div>
-    <div class="talk-scroll">${R?`<div class="talk-q">问题：${esc(R.q)}</div><ol class="talk-steps">${steps.map((s,k)=>`<li class="${k<i||R.done?'done':k===i?'cur':''} ${s.hu?'hu':''}"><span class="ic">${k<i||R.done?'✓':s.ic}</span><div><b>${s.n}</b><small>${esc(s.d)}</small></div></li>`).join('')}</ol>
+    <div class="talk-scroll">${R?`<div class="talk-q">问题：${esc(R.q)}</div>${R.disp?`<div class="talk-disp"><span>已调度</span>${R.disp.map(a=>`<em style="--c:${a.c}"><i>${a.ch}</i>${a.name}</em>`).join('')}${(R.denied||[]).map(a=>`<em class="no"><i>✕</i>${a.name}</em>`).join('')}</div>`:''}<ol class="talk-steps">${steps.map((s,k)=>`<li class="${k<i||R.done?'done':k===i?'cur':''} ${s.hu?'hu':''}"><span class="ic" ${s.ag&&!(k<i||R.done)?`style="background:${s.ag.c};border-color:${s.ag.c};color:#fff;font-size:12px;font-weight:700"`:''}>${k<i||R.done?'✓':s.ag?s.ag.ch:s.ic}</span><div><b>${s.n}</b><small>${esc(s.d)}</small></div></li>`).join('')}</ol>
       ${R.done?`<div class="talk-done">✓ 完成 · 共 ${steps.length} 步${steps.some(s=>s.hu)?' · <a href="#" data-go-approve>去审批中心</a>':''}</div>`:''}`
-     :`<div class="talk-tip">点 🎤 直接说话，或在下面输入问题。</div>`}</div>
+     :`<div class="talk-tip">点 🎤 直接说话，或试试这些：</div><div class="talk-sug">${ORCH_SUG.map((q,k)=>`<button type="button" data-orq="${k}">${esc(q.length>26?q.slice(0,26)+'…':q)}</button>`).join('')}</div>`}</div>
     <form class="talk-in" id="talkForm">
       <button type="button" class="talk-mic ${S.talk.listening?'on':''}" id="talkMic" ${SR?'':'disabled title="当前浏览器不支持语音输入"'} aria-label="语音输入">🎤</button>
-      <input id="talkIn" placeholder="${S.talk.listening?'正在听，请说话…':'直接问小遥…'}" autocomplete="off" ${busy?'disabled':''}>
+      <input id="talkIn" placeholder="${S.talk.listening?'正在听，请说话…':'跟小遥说，她来调度智能体…'}" autocomplete="off" ${busy?'disabled':''}>
       <button class="btn sm pri" type="submit" ${busy?'disabled':''}>发送</button></form>
   </aside>`;
 }
@@ -1994,7 +2009,7 @@ function talkListen(){
   rec.onstart=()=>{S.talk.listening=true; talkPaint()};
   rec.onresult=e=>{ let t=''; for(const r of e.results){ t+=r[0].transcript; if(r.isFinal) finalText=t; } const n=$('#talkIn'); if(n) n.value=t; };
   rec.onerror=e=>{ toast(e.error==='not-allowed'?'没有麦克风权限，请在浏览器里允许使用麦克风':'语音识别暂不可用（'+e.error+'），可以直接输入'); };
-  rec.onend=()=>{ talkRec=null; S.talk.listening=false; const t=(finalText||$('#talkIn')?.value||'').trim(); talkPaint(); if(t) sendChat(t); };
+  rec.onend=()=>{ talkRec=null; S.talk.listening=false; const t=(finalText||$('#talkIn')?.value||'').trim(); talkPaint(); if(t){ if(S.chatAgent!=='xy') S.chatAgent='xy'; sendChat(t); } };
   try{ rec.start() }catch(e){ talkRec=null; toast('语音识别启动失败，可以直接输入') }
 }
 function talkBind(){
@@ -2007,13 +2022,16 @@ function talkBind(){
   const sv=$('#vcSave'); if(sv) sv.onclick=()=>{read();talkSave();S.talk.cfgOpen=false;toast('声音设置已保存');talkPaint()};
   const ts=$('#vcTest'); if(ts) ts.onclick=()=>{read();const was=S.talk.voice;S.talk.voice=true;talkSpeak('你好，我是小遥。接下来由我为你讲解，智能体是怎么一步一步完成工作的。').then(()=>S.talk.voice=was)};
   const m=$('#talkMic'); if(m) m.onclick=talkListen;
-  const f=$('#talkForm'); if(f) f.onsubmit=e=>{e.preventDefault(); const t=$('#talkIn').value.trim(); if(t) sendChat(t)};
+  const ask=t=>{ if(S.talk.run&&!S.talk.run.done) return; if(S.chatAgent!=='xy'){S.chatAgent='xy';} sendChat(t); };
+  const f=$('#talkForm'); if(f) f.onsubmit=e=>{e.preventDefault(); const t=$('#talkIn').value.trim(); if(t) ask(t)};
+  document.querySelectorAll('[data-orq]').forEach(b=>b.onclick=()=>ask(ORCH_SUG[+b.dataset.orq]));
   const g=document.querySelector('[data-go-approve]'); if(g) g.onclick=e=>{e.preventDefault(); go(myApprovals().length?'approve':'home')};
 }
 function talkSummary(t){
-  let s=String(t||'').replace(/[#*`>|]/g,'').replace(/\n+/g,'，').replace(/[·•]\s*/g,'').replace(/，+/g,'，').replace(/^，|，$/g,'');
-  if(s.length>110) s=s.slice(0,110).replace(/[，。；、][^，。；、]*$/,'')+'。详细内容我放在左边了';
-  return s;
+  const lines=String(t||'').split('\n').map(l=>l.replace(/^[\s·•\-【】①②③④⑤⑥⑦⑧⑨]+/,'').replace(/[【】#*`>|]/g,'').trim()).filter(Boolean);
+  let s=''; for(const l of lines){ if(s.length+l.length>90) break; s+=(s?'，':'')+l.replace(/[。；]$/,''); }
+  if(!s) s=(lines[0]||'').slice(0,90);
+  return s+(lines.join('').length>s.length+4?'。详细内容在左边':'。');
 }
 const _sendChatCore = sendChat;
 sendChat = async function(text, demoIdx){
@@ -2037,6 +2055,88 @@ sendChat = async function(text, demoIdx){
     R.done=true; R.i=R.steps.length; R.say=talkSummary(last&&last.t)||'处理完成，回答在左边。';
     talkPaint(); talkType(R.say); talkSpeak(R.say,token);
   }
+};
+/* ================= 小遥：统一入口，调度各智能体（演示） ================= */
+const ORCH_RULES = [
+  ['ord',/识别.*订单|订单.*(识别|录入|入库)|微信.*订单|这封邮件|提货单|照片|追加|补货需求/],
+  ['route',/短驳|排线|路线|派车|怎么排/],
+  ['split',/拆单/],
+  ['track',/到哪|运单|签收|在途|状态|能送到|几点到/],
+  ['inv',/库存|缺货|可分配|还有多少|能送到|有货/],
+  ['sop',/制度|规定|SOP|规范|报销|标准|手续|安全/],
+  ['quote',/报价|测算.*价|多少钱/],
+  ['bid',/招标|投标|偏离/],
+  ['fee',/运费|账单|核算/],
+  ['recon',/对账|差异/],
+  ['8d',/8D|报缺|货损/],
+  ['abn',/异常|延误|预警/],
+  ['plan',/仓网|规划|选址/],
+  ['opp',/商机/],['follow',/跟进|拜访/],['survey',/调研/],['load',/配载|满载/],['coop',/协同决策|经营/],
+];
+const ORCH_ANS = {
+  ord: t=>/邮件/.test(t)?`已识别为订单事件（来源：邮件）\n· 客户：某主机厂 · 安亭总装\n· 料号：C-3305 仪表板骨架 × 80 件；D-0912 线束 × 300 根\n· 送达：安亭总装 1 号门，11/24 10:00 前\n· 校验：字段齐全，料号存在，无重复\n下一步：已进入复核队列，订单专员确认后写入 OWTB（需审批）。`
+      : /照片|提货单|手写/.test(t)?`已识别为提货单（来源：照片 · 手写）\n· 提货点：嘉定零部件园\n· 料号：E-7781 座椅滑轨\n· 数量：60 件 ⚠ 手写“6O”置信度 82%，请核对\n· 提货时间：今天 14:00–16:00\n下一步：数量已标黄，复核确认后生成提货任务。`
+      : `已识别为订单事件（来源：微信群）\n· 客户：某主机厂 · 安亭总装\n· 料号：B-1180 门板饰条 × 200 套\n· 送达：安亭总装 3 号门\n· 送达时间：缺失 ⚠ 已拦截\n下一步：已起草回复“王经理您好，请问明天几点前送到 3 号门？”，补齐后进入复核，确认写入 OWTB（需审批）。`,
+  inv: t=>/B-1180/.test(t)?`B-1180 门板饰条：嘉定仓可分配 120 套，昆山 2 号仓可分配 300 套。\n建议从昆山 2 号仓发货。`:null,
+  track: t=>/B-1180|能送到/.test(t)?`昆山 2 号仓 → 安亭总装：今天 16:00 前下单可赶上明早第一车，预计 9:40 到达 3 号门。`:null,
+  route: ()=>`已生成 3 个候选方案（18 单 · 6 台车 · 约束 100% 满足）：\n· A 成本优先 ¥8,640，准时 91.2%\n· B 准时优先 ¥9,480，准时 98.6%\n· C 均衡（推荐）¥8,970，准时 96.1%，较人工省 7.4%\n请选择方案后提交派车审批。`,
+  sop: t=>/报销|住宿|差旅/.test(t)?`根据《差旅费管理办法 v2.1》第 3.2 条：一线城市住宿每晚不超过 550 元，其他城市不超过 400 元；超标需部门负责人审批。\n出处：差旅费管理办法 v2.1 · 第 3.2 条`:null,
+};
+function orchRoute(text){
+  const ids=[]; ORCH_RULES.forEach(([id,re])=>{ if(re.test(text) && !ids.includes(id)) ids.push(id) });
+  return ids.slice(0,3);
+}
+function orchAnswer(t,text){
+  const f=ORCH_ANS[t.id]; const s=f&&f(text); if(s) return s;
+  return mockReply(t,text).t;
+}
+async function orchestrate(text){
+  const xy=AGENTS.find(a=>a.id==='xy');
+  const arr = S.chats.xy || (S.chats.xy=[{r:'a',t:`你好，我是小遥。${xy.desc}`}]);
+  const ids=orchRoute(text);
+  const avail=myAgents().filter(a=>S.enabled[a.id]);
+  const targets=ids.map(id=>AGENTS.find(a=>a.id===id)).filter(Boolean);
+  const ok=targets.filter(t=>avail.includes(t)), denied=targets.filter(t=>!avail.includes(t));
+  const r=role(), names=ok.map(t=>t.name);
+  const steps=[{ic:'🧭',n:'听懂需求',d:targets.length?`需要：${targets.map(t=>t.name).join('、')}`:'通用问题，由小遥直接回答',
+     say:targets.length?`我听明白了，这件事需要${targets.map(t=>t.name).join('和')}来处理，我来安排。`:'这是个通用问题，我直接回答你。'},
+    {ic:'🪪',n:'核对身份与权限',d:`${r.user} · ${r.name}${denied.length?` · 无权调用：${denied.map(t=>t.name).join('、')}`:' · 全部通过'}`,
+     say:denied.length?`我核对了一下，你是${r.name}，${denied.map(t=>t.name).join('和')}不在你的岗位权限里，我不会调用它${ok.length?'，其余的照常处理':''}。`:`身份确认，你是${r.name}${r.user}，可以调用这些智能体。`}];
+  ok.forEach(t=>{ const sys=(t.tools||[]).filter(x=>x.includes('Bridge')).map(x=>x.replace('Bridge · ','')); const alg=(t.tools||[]).filter(x=>!x.includes('Bridge')&&!x.includes('知识库'));
+    steps.push({ag:t,n:`调度「${t.name}」`,d:(t.tools||[]).join('、'),
+      say:`现在请${t.name}出马，${sys.length?`它会通过安全网关只读查询${sys.join('和')}`:alg.length?`它会用${alg[0]}来处理`:'它会到知识库里查找资料'}。`}); });
+  steps.push({ic:'💬',n:ok.length>1?'汇总多个智能体的结果':'组织回答',d:LLM.key?`DeepSeek · ${LLM.model}`:'私有化大模型汇总，附出处',say:ok.length>1?'几个智能体都回来了，我把结果合在一起告诉你。':'结果出来了，我整理一下告诉你。'});
+  const hu=ok.find(t=>t.lv==='L2'||t.lv==='L3');
+  if(hu) steps.push({ic:'✋',n:'等待人工确认',d:hu.lv==='L3'?'写入业务系统前必须审批':'方案由你选定后执行',hu:true,say:'提醒一下：涉及修改业务数据的操作，我只做准备，需要你确认、主管审批后才会执行。'});
+
+  const u={r:'u',t:text}, slot={r:'a',t:'小遥正在调度智能体…',pending:true}; arr.push(u,slot);
+  const token=Math.random(); S.talk.run={token,q:text,agent:'xy',steps,i:0,say:'',done:false,disp:ok,denied};
+  renderPage(); scrollMsgs();
+  const R=S.talk.run, alive=()=>S.talk.run===R && S.page==='chat';
+  // 并行准备答案（有 DeepSeek Key 时真实调用各智能体）
+  const answers = Promise.all(ok.map(async t=>{ if(!LLM.key) return orchAnswer(t,text);
+    try{ const o=await callLLM(t,[{role:'user',content:text}]); return o.text||orchAnswer(t,text) }catch(e){ return orchAnswer(t,text) } }));
+  for(let k=0;k<steps.length;k++){
+    if(!alive() && S.talk.run!==R) break;
+    R.i=k; R.say=steps[k].say; if(S.page==='chat'){ talkPaint(); talkType(R.say); }
+    await talkSpeak(R.say,token);
+  }
+  const res=await answers;
+  let t;
+  if(!targets.length){ t = LLM.key ? await callLLM(xy,[{role:'user',content:text}]).then(o=>o.text).catch(()=>mockReply(xy,text).t) : (mockReply(xy,text).t); }
+  else t = ok.map((a,k)=>`【${a.name}】\n${res[k]}`).join('\n\n') + (denied.length?`\n\n【权限提示】你的岗位无法调用：${denied.map(a=>a.name).join('、')}。如需使用请联系管理员。`:'');
+  slot.t=t; delete slot.pending; slot.src = targets.length?`小遥调度 → ${ok.map(a=>a.name).join(' + ')||'（无可用智能体）'} · trace-${Math.random().toString(16).slice(2,8)}`:'小遥直接回答';
+  if(ok.length===1 && res[0]) R.sum=res[0];
+  R.done=true; R.i=steps.length;
+  const sumSrc = ok.length>1 ? ok.map((a,k)=>res[k].split('\n')[0]).join('；') : (res[0]||t);
+  R.say = talkSummary(sumSrc) || '处理完成。';
+  if(S.page==='chat' && S.chatAgent==='xy'){ renderPage(); scrollMsgs(); }
+  if(S.talk.run===R){ talkType(R.say); talkSpeak(R.say,token); }
+}
+const _sendChatTalk = sendChat;
+sendChat = async function(text, demoIdx){
+  if(S.chatAgent==='xy'){ if(S.talk.run && !S.talk.run.done) return; return orchestrate(text); }
+  return _sendChatTalk(text, demoIdx);
 };
 
 /* 启动 */
