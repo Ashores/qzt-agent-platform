@@ -690,6 +690,23 @@ mark.ex-m{background:var(--accent-soft);color:var(--accent);padding:0 2px;border
 @media (max-width:900px){.chat.has-talk{grid-template-columns:minmax(0,1fr)}.talk{border-left:0;border-top:1px solid var(--line)}.chat.has-talk .chat-list{display:flex;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line)}.chat.has-talk .chat-list button{flex:none;width:auto;border-bottom:0}.chat.has-talk{height:auto}.chat.has-talk .msgs{min-height:320px}}
 @media (prefers-reduced-motion:reduce){.dh,.dh *,.talk-steps .ic{animation:none!important}}
 .ph .grow{flex:1 1 260px}
+.talk-btns{margin-left:auto;display:flex;gap:2px}
+.talk-top .talk-btns .ic-btn{margin:0;font-size:15px}
+.talk-scroll{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px}
+.talk-in{display:flex;gap:6px;align-items:center;border-top:1px solid var(--line);padding-top:12px;margin-top:auto}
+.talk-in input{flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface);color:var(--fg)}
+.talk-mic{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:16px;flex:none;display:grid;place-items:center;position:relative}
+.talk-mic:hover:not([disabled]){border-color:var(--accent)}
+.talk-mic.on{background:var(--bad);border-color:var(--bad);animation:micPulse 1.2s ease infinite}
+.talk-mic[disabled]{opacity:.4;cursor:not-allowed}
+@keyframes micPulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--bad) 45%,transparent)}100%{box-shadow:0 0 0 12px transparent}}
+.talk-cfg{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;font-size:12px}
+.talk-cfg-h{display:flex;align-items:center}.talk-cfg-h .ic-btn{margin-left:auto}
+.talk-cfg label{display:flex;flex-direction:column;gap:4px;color:var(--muted)}
+.talk-cfg select,.talk-cfg input:not([type=range]){border:1px solid var(--line);border-radius:7px;padding:6px 8px;background:var(--surface);color:var(--fg);font-size:13px}
+.talk-note{font-size:12px;color:var(--muted);background:var(--surface2);border-radius:8px;padding:8px 10px;line-height:1.55}
+.talk{overflow:hidden}.talk > *{flex:none}.talk > .talk-scroll{flex:1 1 auto;overflow:auto}@media (max-width:900px){.talk{overflow:visible}.talk > .talk-scroll{overflow:visible}}
+.talk > .talk-cfg{flex:0 1 auto;overflow:auto;min-height:120px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -1855,23 +1872,26 @@ function exHitl(){
 }
 
 /* ================= 对话过程讲解 + 数字人（演示） ================= */
-S.talk = {on:true, voice:true, run:null};
+S.talk = {on:true, voice:true, run:null, cfgOpen:false, listening:false};
+const VC = {engine:'browser', bvoice:'', azKey:'', azRegion:'eastasia', azVoice:'zh-CN-XiaoxiaoNeural', rate:1};
 try{ const t=JSON.parse(localStorage.getItem('qzt-talk')||'null'); if(t){S.talk.on=t.on!==false;S.talk.voice=t.voice!==false;} }catch(e){}
-function talkSave(){ try{localStorage.setItem('qzt-talk',JSON.stringify({on:S.talk.on,voice:S.talk.voice}))}catch(e){} }
-const TALK_HELLO = '你好，我是数字讲解员小遥。你在左边提问后，我会一步一步讲给你听：智能体正在做什么、用了哪些数据和工具。';
+try{ const v=JSON.parse(localStorage.getItem('qzt-voice')||'null'); if(v) Object.assign(VC,v); }catch(e){}
+function talkSave(){ try{localStorage.setItem('qzt-talk',JSON.stringify({on:S.talk.on,voice:S.talk.voice}));localStorage.setItem('qzt-voice',JSON.stringify(VC))}catch(e){} }
+const TALK_HELLO = '你好，我是数字讲解员小遥。你可以在左边提问，也可以直接在下面跟我说话，我会一步一步讲给你听。';
+const AZ_VOICES = [['zh-CN-XiaoxiaoNeural','晓晓 · 温柔女声'],['zh-CN-XiaoyiNeural','晓伊 · 活泼女声'],['zh-CN-XiaochenNeural','晓辰 · 自然女声'],['zh-CN-YunxiNeural','云希 · 青年男声'],['zh-CN-YunyangNeural','云扬 · 新闻播音']];
 
 function talkSteps(a){
   const r=role(), tools=a.tools||[];
   const kb=tools.filter(t=>t.includes('知识库'));
   const sys=tools.filter(t=>t.includes('Bridge')).map(t=>t.replace('Bridge · ',''));
   const alg=tools.filter(t=>!t.includes('知识库')&&!t.includes('Bridge'));
-  const st=[{ic:'🧭',n:'听懂问题',d:`识别意图，交给「${a.name}」`,say:`我先理解你的问题。这件事交给「${a.name.replace(/ · .*/,'')}」来处理。`},
-    {ic:'🪪',n:'核对身份与权限',d:`${r.user} · ${r.name} · 权限通过`,say:`然后确认你的身份：${r.name}${r.user}，有权限使用这个智能体，也只能看到本岗位的数据。`}];
-  if(kb.length) st.push({ic:'📚',n:'检索知识库',d:'命中 3 份相关文档，回答将附出处',say:'接着到公司知识库里查找相关的制度和资料，回答会标注出处。'});
-  if(sys.length) st.push({ic:'🔌',n:'读取业务数据',d:`经 Bridge 网关只读：${sys.join('、')}`,say:`通过 Bridge 安全网关读取${sys.join('、')}的数据。这一步只读，不会改动任何业务数据。`});
-  if(alg.length) st.push({ic:'🧮',n:'调用专业工具',d:alg.join('、'),say:`需要精确计算的部分，交给${alg[0]}来算，而不是让大模型去猜。`});
-  st.push({ic:'💬',n:'组织回答',d:LLM.key?`DeepSeek · ${LLM.model}`:'私有化大模型生成，附数据来源',say:'最后由大模型把结果整理成通俗的回答。'});
-  if(a.lv==='L2'||a.lv==='L3') st.push({ic:'✋',n:'等待人工确认',d:a.lv==='L3'?'写入业务系统前必须审批':'方案由你选择后再执行',hu:true,say:a.lv==='L3'?'注意：要写入业务系统的操作，我只做准备，必须经过你复核和主管审批才会执行。':'我给出的是候选方案，由你来选择，确认后才会提交执行。'});
+  const st=[{ic:'🧭',n:'听懂问题',d:`识别意图，交给「${a.name}」`,say:`好的，我先理解你的问题，这件事交给${a.name.replace(/ · .*/,'')}来处理。`},
+    {ic:'🪪',n:'核对身份与权限',d:`${r.user} · ${r.name} · 权限通过`,say:`我确认了一下，你是${r.name}${r.user}，可以使用这个智能体，也只会看到你岗位的数据。`}];
+  if(kb.length) st.push({ic:'📚',n:'检索知识库',d:'命中 3 份相关文档，回答将附出处',say:'接下来我去公司知识库里找相关的制度和资料，回答会标上出处。'});
+  if(sys.length) st.push({ic:'🔌',n:'读取业务数据',d:`经 Bridge 网关只读：${sys.join('、')}`,say:`现在通过安全网关查一下${sys.join('和')}里的数据。放心，只是读取，不会改动任何东西。`});
+  if(alg.length) st.push({ic:'🧮',n:'调用专业工具',d:alg.join('、'),say:`需要精确计算的部分，我交给${alg[0]}来算，不靠大模型去猜。`});
+  st.push({ic:'💬',n:'组织回答',d:LLM.key?`DeepSeek · ${LLM.model}`:'私有化大模型生成，附数据来源',say:'好了，我把结果整理成通俗的话给你。'});
+  if(a.lv==='L2'||a.lv==='L3') st.push({ic:'✋',n:'等待人工确认',d:a.lv==='L3'?'写入业务系统前必须审批':'方案由你选择后再执行',hu:true,say:a.lv==='L3'?'要提醒一下：写入业务系统的操作，我只做准备，必须你复核、主管审批之后才会执行。':'这些是候选方案，由你来选，确认之后才会提交执行。'});
   return st;
 }
 function talkAvatar(speaking){
@@ -1893,44 +1913,112 @@ function talkAvatar(speaking){
     <path d="M30 56c0-18 13-30 30-30s30 12 30 30" stroke="#5b8cff" stroke-width="2.4" fill="none"/><rect x="24" y="52" width="9" height="14" rx="4" fill="#5b8cff"/><path d="M28 66q2 8 14 8" stroke="#5b8cff" stroke-width="2" fill="none"/><circle cx="43" cy="74" r="2.2" fill="#5b8cff"/>
   </svg><span class="dh-ring"></span></div>`;
 }
-function talkPanel(){
-  const R=S.talk.run, steps=R?R.steps:[], i=R?R.i:-1;
-  const say = R ? (R.say||'') : TALK_HELLO;
-  return `<aside class="talk" id="talkPanel">
-    <div class="talk-top">${talkAvatar(R&&R.speaking)}<div class="talk-id"><b>小遥</b><span>数字讲解员</span></div>
-      <button class="ic-btn" type="button" id="talkVoice" title="${S.talk.voice?'关闭语音':'开启语音'}" aria-label="${S.talk.voice?'关闭语音':'开启语音'}">${S.talk.voice?'🔊':'🔇'}</button></div>
-    <div class="talk-bubble" id="talkSay">${esc(say)}</div>
-    ${R?`<div class="talk-q">问题：${esc(R.q)}</div><ol class="talk-steps">${steps.map((s,k)=>`<li class="${k<i||R.done?'done':k===i?'cur':''} ${s.hu?'hu':''}"><span class="ic">${k<i||R.done?'✓':s.ic}</span><div><b>${s.n}</b><small>${esc(s.d)}</small></div></li>`).join('')}</ol>
-      ${R.done?`<div class="talk-done">✓ 完成 · 共 ${steps.length} 步${steps.some(s=>s.hu)?' · <a href="#" data-go-approve>去审批中心</a>':''}</div>`:''}`
-     :`<div class="talk-tip">试试点击左侧下方的推荐问题 👇</div>`}
-  </aside>`;
+/* ---------- 语音（TTS） ---------- */
+let talkVoices=[];
+function talkLoadVoices(){ try{ talkVoices=speechSynthesis.getVoices().filter(v=>/^(zh|cmn)/i.test(v.lang)); }catch(e){} }
+try{ talkLoadVoices(); speechSynthesis.onvoiceschanged=()=>{talkLoadVoices(); if(S.talk.cfgOpen) talkPaint();}; }catch(e){}
+function talkScore(v){ const n=v.name; let s=0; if(/Natural|Neural|Online/i.test(n)) s+=50; if(/Xiaoxiao|Xiaoyi|Xiaochen|晓/i.test(n)) s+=20; if(/Google/i.test(n)) s+=30; if(/zh[-_]CN/i.test(v.lang)) s+=5; if(/Huihui|Kangkang/i.test(n)) s-=5; return s; }
+function talkBestVoice(){ if(VC.bvoice){const f=talkVoices.find(v=>v.name===VC.bvoice); if(f) return f} return [...talkVoices].sort((a,b)=>talkScore(b)-talkScore(a))[0]||null; }
+function talkNatural(){ const v=talkBestVoice(); return VC.engine==='azure'&&VC.azKey ? true : !!(v && talkScore(v)>=30); }
+let talkAudio=null;
+function talkStopVoice(){ try{speechSynthesis.cancel()}catch(e){} if(talkAudio){try{talkAudio.pause()}catch(e){} talkAudio=null} }
+async function talkAzure(text){
+  const ssml=`<speak version="1.0" xml:lang="zh-CN" xmlns:mstts="https://www.w3.org/2001/mstts"><voice name="${VC.azVoice}"><mstts:express-as style="friendly"><prosody rate="${Math.round((VC.rate-1)*100)}%">${esc(text)}</prosody></mstts:express-as></voice></speak>`;
+  const r=await fetch(`https://${encodeURIComponent(VC.azRegion)}.tts.speech.microsoft.com/cognitiveservices/v1`,{method:'POST',headers:{'Ocp-Apim-Subscription-Key':VC.azKey,'Content-Type':'application/ssml+xml','X-Microsoft-OutputFormat':'audio-24khz-48kbitrate-mono-mp3'},body:ssml});
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  return URL.createObjectURL(await r.blob());
 }
-function talkPaint(){ const p=$('#talkPanel'); if(!p) return false; p.outerHTML=talkPanel(); talkBind(); return true; }
-function talkBind(){
-  const v=$('#talkVoice'); if(v) v.onclick=()=>{S.talk.voice=!S.talk.voice; talkSave(); if(!S.talk.voice) try{speechSynthesis.cancel()}catch(e){} talkPaint()};
-  const g=document.querySelector('[data-go-approve]'); if(g) g.onclick=e=>{e.preventDefault(); go(myApprovals().length?'approve':'home')};
-}
-let talkVoiceObj=null;
-function talkPickVoice(){ try{ const vs=speechSynthesis.getVoices(); talkVoiceObj = vs.find(v=>/zh[-_]CN/i.test(v.lang)&&/Xiaoxiao|Female|Tingting|女/i.test(v.name)) || vs.find(v=>/zh[-_]CN/i.test(v.lang)) || vs.find(v=>/^zh/i.test(v.lang)) || null; }catch(e){} }
-try{ talkPickVoice(); speechSynthesis.onvoiceschanged=talkPickVoice; }catch(e){}
-function talkSpeak(text,token){
-  return new Promise(res=>{
-    const R=S.talk.run; const min=Math.max(1500, text.length*120);
-    let done=false; const fin=()=>{ if(done) return; done=true; if(R){R.speaking=false; if(S.talk.run===R&&R.token===token){const d=document.querySelector('#talkPanel .dh'); if(d) d.classList.remove('speaking')}} res(); };
-    if(R){R.speaking=true; const d=document.querySelector('#talkPanel .dh'); if(d) d.classList.add('speaking')}
-    if(S.talk.voice && 'speechSynthesis' in window){
-      try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang='zh-CN'; u.rate=1.08; if(talkVoiceObj) u.voice=talkVoiceObj;
-        u.onend=fin; u.onerror=()=>setTimeout(fin,min); speechSynthesis.speak(u); setTimeout(fin, text.length*320+2500); }catch(e){ setTimeout(fin,min) }
-    } else setTimeout(fin,min);
+function talkTTS(text){
+  return new Promise(async res=>{
+    const min=Math.max(1500,text.length*130); let done=false; const fin=()=>{if(done)return;done=true;res()};
+    if(!S.talk.voice){ setTimeout(fin,min); return }
+    talkStopVoice();
+    if(VC.engine==='azure' && VC.azKey){
+      try{ const url=await talkAzure(text); const au=new Audio(url); talkAudio=au; au.onended=()=>{URL.revokeObjectURL(url);fin()}; au.onerror=fin; await au.play(); setTimeout(fin,text.length*400+4000); return }
+      catch(e){ toast('云端语音调用失败（'+(e.message||e)+'），已改用浏览器语音'); }
+    }
+    if(!('speechSynthesis' in window)){ setTimeout(fin,min); return }
+    try{ const u=new SpeechSynthesisUtterance(text); const v=talkBestVoice(); if(v){u.voice=v;u.lang=v.lang} else u.lang='zh-CN';
+      u.rate=VC.rate*(v&&/Natural|Online/i.test(v.name)?1.05:1); u.pitch=1.05; u.onend=fin; u.onerror=()=>setTimeout(fin,min); speechSynthesis.speak(u); setTimeout(fin,text.length*350+3000); }
+    catch(e){ setTimeout(fin,min) }
   });
+}
+function talkSpeak(text,token){
+  const R=S.talk.run; const set=on=>{ if(R) R.speaking=on; const d=document.querySelector('#talkPanel .dh'); if(d) d.classList.toggle('speaking',on); };
+  set(true); return talkTTS(text).then(()=>{ if(!R||S.talk.run===R) set(false); });
 }
 function talkType(text){
   const el=$('#talkSay'); if(!el) return; el.textContent=''; let k=0;
   const step=()=>{ if(!document.body.contains(el)) return; el.textContent=text.slice(0,++k); if(k<text.length) setTimeout(step,28) }; step();
 }
+/* ---------- 面板 ---------- */
+function talkCfg(){
+  const bv=talkBestVoice();
+  return `<div class="talk-cfg"><div class="talk-cfg-h"><b>声音设置</b><button class="ic-btn" type="button" id="talkCfgClose" aria-label="关闭">✕</button></div>
+    <label>声音来源<select id="vcEngine"><option value="browser" ${VC.engine==='browser'?'selected':''}>浏览器自带语音（免费）</option><option value="azure" ${VC.engine==='azure'?'selected':''}>云端拟人语音（微软 Azure 神经语音）</option></select></label>
+    ${VC.engine==='browser'?`<label>音色<select id="vcBVoice"><option value="">自动选择最自然的</option>${talkVoices.map(v=>`<option value="${esc(v.name)}" ${VC.bvoice===v.name?'selected':''}>${esc(v.name.replace(/ - Chinese.*$/,'').replace('Microsoft ',''))}${talkScore(v)>=30?' ★':''}</option>`).join('')}</select></label>
+      <div class="talk-note">${bv&&talkScore(bv)>=30?'当前已使用拟人音色 ★':'这台电脑的浏览器只有机械音色。用 <b>Edge 浏览器</b>打开可免费获得“晓晓”等拟人音色，或改用云端拟人语音。'}</div>`
+    :`<label>音色<select id="vcAzVoice">${AZ_VOICES.map(v=>`<option value="${v[0]}" ${VC.azVoice===v[0]?'selected':''}>${v[1]}</option>`).join('')}</select></label>
+      <label>Speech 服务 Key<input id="vcAzKey" type="password" autocomplete="off" value="${esc(VC.azKey)}" placeholder="Azure 语音服务密钥"></label>
+      <label>区域<input id="vcAzRegion" value="${esc(VC.azRegion)}" placeholder="如 eastasia"></label>
+      <div class="talk-note">Key 只保存在本机浏览器，不写进页面。正式环境可换成私有化部署的语音合成服务。</div>`}
+    <label>语速<input id="vcRate" type="range" min="0.8" max="1.3" step="0.05" value="${VC.rate}"></label>
+    <div style="display:flex;gap:8px"><button class="btn sm pri" type="button" id="vcSave">保存</button><button class="btn sm" type="button" id="vcTest">试听</button></div></div>`;
+}
+function talkPanel(){
+  const R=S.talk.run, steps=R?R.steps:[], i=R?R.i:-1, busy=R&&!R.done;
+  const say = R ? (R.say||'') : TALK_HELLO;
+  const SR = window.SpeechRecognition||window.webkitSpeechRecognition;
+  return `<aside class="talk" id="talkPanel">
+    <div class="talk-top">${talkAvatar(R&&R.speaking)}<div class="talk-id"><b>小遥</b><span>数字讲解员${talkNatural()?' · 拟人音色':''}</span></div>
+      <div class="talk-btns"><button class="ic-btn" type="button" id="talkVoice" title="${S.talk.voice?'静音':'开启声音'}" aria-label="${S.talk.voice?'静音':'开启声音'}">${S.talk.voice?'🔊':'🔇'}</button><button class="ic-btn" type="button" id="talkCfgBtn" title="声音设置" aria-label="声音设置">⚙️</button></div></div>
+    ${S.talk.cfgOpen?talkCfg():''}
+    <div class="talk-bubble" id="talkSay">${esc(say)}</div>
+    <div class="talk-scroll">${R?`<div class="talk-q">问题：${esc(R.q)}</div><ol class="talk-steps">${steps.map((s,k)=>`<li class="${k<i||R.done?'done':k===i?'cur':''} ${s.hu?'hu':''}"><span class="ic">${k<i||R.done?'✓':s.ic}</span><div><b>${s.n}</b><small>${esc(s.d)}</small></div></li>`).join('')}</ol>
+      ${R.done?`<div class="talk-done">✓ 完成 · 共 ${steps.length} 步${steps.some(s=>s.hu)?' · <a href="#" data-go-approve>去审批中心</a>':''}</div>`:''}`
+     :`<div class="talk-tip">点 🎤 直接说话，或在下面输入问题。</div>`}</div>
+    <form class="talk-in" id="talkForm">
+      <button type="button" class="talk-mic ${S.talk.listening?'on':''}" id="talkMic" ${SR?'':'disabled title="当前浏览器不支持语音输入"'} aria-label="语音输入">🎤</button>
+      <input id="talkIn" placeholder="${S.talk.listening?'正在听，请说话…':'直接问小遥…'}" autocomplete="off" ${busy?'disabled':''}>
+      <button class="btn sm pri" type="submit" ${busy?'disabled':''}>发送</button></form>
+  </aside>`;
+}
+function talkPaint(){ const p=$('#talkPanel'); if(!p) return false; const v=$('#talkIn')?.value||''; p.outerHTML=talkPanel(); const n=$('#talkIn'); if(n&&!n.disabled) n.value=v; talkBind(); return true; }
+let talkRec=null;
+function talkListen(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR) return;
+  if(talkRec){ try{talkRec.stop()}catch(e){} return }
+  talkStopVoice();
+  const rec=new SR(); talkRec=rec; rec.lang='zh-CN'; rec.interimResults=true; rec.continuous=false;
+  let finalText='';
+  rec.onstart=()=>{S.talk.listening=true; talkPaint()};
+  rec.onresult=e=>{ let t=''; for(const r of e.results){ t+=r[0].transcript; if(r.isFinal) finalText=t; } const n=$('#talkIn'); if(n) n.value=t; };
+  rec.onerror=e=>{ toast(e.error==='not-allowed'?'没有麦克风权限，请在浏览器里允许使用麦克风':'语音识别暂不可用（'+e.error+'），可以直接输入'); };
+  rec.onend=()=>{ talkRec=null; S.talk.listening=false; const t=(finalText||$('#talkIn')?.value||'').trim(); talkPaint(); if(t) sendChat(t); };
+  try{ rec.start() }catch(e){ talkRec=null; toast('语音识别启动失败，可以直接输入') }
+}
+function talkBind(){
+  const v=$('#talkVoice'); if(v) v.onclick=()=>{S.talk.voice=!S.talk.voice; talkSave(); if(!S.talk.voice) talkStopVoice(); talkPaint()};
+  const c=$('#talkCfgBtn'); if(c) c.onclick=()=>{S.talk.cfgOpen=!S.talk.cfgOpen; talkPaint()};
+  const cc=$('#talkCfgClose'); if(cc) cc.onclick=()=>{S.talk.cfgOpen=false; talkPaint()};
+  const read=()=>{ const g=id=>$(id); if(g('#vcEngine')) VC.engine=g('#vcEngine').value; if(g('#vcBVoice')) VC.bvoice=g('#vcBVoice').value;
+    if(g('#vcAzVoice')) VC.azVoice=g('#vcAzVoice').value; if(g('#vcAzKey')) VC.azKey=g('#vcAzKey').value.trim(); if(g('#vcAzRegion')) VC.azRegion=g('#vcAzRegion').value.trim()||'eastasia'; if(g('#vcRate')) VC.rate=+g('#vcRate').value; };
+  const en=$('#vcEngine'); if(en) en.onchange=()=>{read();talkPaint()};
+  const sv=$('#vcSave'); if(sv) sv.onclick=()=>{read();talkSave();S.talk.cfgOpen=false;toast('声音设置已保存');talkPaint()};
+  const ts=$('#vcTest'); if(ts) ts.onclick=()=>{read();const was=S.talk.voice;S.talk.voice=true;talkSpeak('你好，我是小遥。接下来由我为你讲解，智能体是怎么一步一步完成工作的。').then(()=>S.talk.voice=was)};
+  const m=$('#talkMic'); if(m) m.onclick=talkListen;
+  const f=$('#talkForm'); if(f) f.onsubmit=e=>{e.preventDefault(); const t=$('#talkIn').value.trim(); if(t) sendChat(t)};
+  const g=document.querySelector('[data-go-approve]'); if(g) g.onclick=e=>{e.preventDefault(); go(myApprovals().length?'approve':'home')};
+}
+function talkSummary(t){
+  let s=String(t||'').replace(/[#*`>|]/g,'').replace(/\n+/g,'，').replace(/[·•]\s*/g,'').replace(/，+/g,'，').replace(/^，|，$/g,'');
+  if(s.length>110) s=s.slice(0,110).replace(/[，。；、][^，。；、]*$/,'')+'。详细内容我放在左边了';
+  return s;
+}
 const _sendChatCore = sendChat;
 sendChat = async function(text, demoIdx){
   if(!S.talk.on) return _sendChatCore(text, demoIdx);
+  if(S.talk.run && !S.talk.run.done) return;
   const a=AGENTS.find(x=>x.id===S.chatAgent);
   const arr = S.chats[a.id] || (S.chats[a.id]=[{r:'a',t:`你好，我是「${a.name}」。${a.desc}`}]);
   const u={r:'u',t:text}, slot={r:'a',t:'正在处理，讲解员小遥正在逐步说明…',pending:true}; arr.push(u,slot);
@@ -1943,9 +2031,12 @@ sendChat = async function(text, demoIdx){
     await talkSpeak(R.say,token);
   }
   arr.splice(arr.indexOf(slot),1); arr.splice(arr.indexOf(u),1);
-  if(alive()){ R.done=true; R.i=R.steps.length; R.say='处理完成，回答已经显示在左边。你可以继续追问。'; }
   await _sendChatCore(text, demoIdx);
-  if(alive()){ talkPaint(); talkType(R.say); talkSpeak(R.say,token); }
+  if(alive()){
+    const last=[...(S.chats[a.id]||[])].reverse().find(m=>m.r==='a');
+    R.done=true; R.i=R.steps.length; R.say=talkSummary(last&&last.t)||'处理完成，回答在左边。';
+    talkPaint(); talkType(R.say); talkSpeak(R.say,token);
+  }
 };
 
 /* 启动 */
