@@ -1,0 +1,761 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>群智通智能体平台</title>
+<style>
+/* 布局：左侧固定导航 + 右侧工作区；入口为全屏身份选择 */
+:root{
+  --bg:#f4f7fc; --surface:#ffffff; --surface2:#f0f4fb; --line:#e3e9f3; --fg:#18233a; --muted:#66728a; --faint:#9aa5b8;
+  --accent:#2f6bf0; --accent-soft:#e8efff; --accent-fg:#ffffff;
+  --ok:#17a36b; --ok-soft:#e3f6ee; --warn:#d98a12; --warn-soft:#fdf2df; --bad:#d64545; --bad-soft:#fde8e8; --vio:#7a5af5; --vio-soft:#efeaff;
+  --shadow:0 1px 2px rgba(24,35,58,.04),0 4px 14px rgba(24,35,58,.05);
+  --f-body:"Inter","Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1420; --surface:#171e2d; --surface2:#1d2638; --line:#28324a; --fg:#e6ebf5; --muted:#98a3ba; --faint:#6b768e;
+  --accent:#5b8cff; --accent-soft:#1e2c4f; --accent-fg:#ffffff;
+  --ok:#3cc98e; --ok-soft:#173528; --warn:#f0a93a; --warn-soft:#3a2c14; --bad:#f06b6b; --bad-soft:#3d1c1f; --vio:#a08bff; --vio-soft:#2a2350;
+  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1420; --surface:#171e2d; --surface2:#1d2638; --line:#28324a; --fg:#e6ebf5; --muted:#98a3ba; --faint:#6b768e;
+  --accent:#5b8cff; --accent-soft:#1e2c4f; --accent-fg:#ffffff;
+  --ok:#3cc98e; --ok-soft:#173528; --warn:#f0a93a; --warn-soft:#3a2c14; --bad:#f06b6b; --bad-soft:#3d1c1f; --vio:#a08bff; --vio-soft:#2a2350;
+  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;line-height:1.55}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--f-mono);font-size:12px}
+.num{font-variant-numeric:tabular-nums}
+h1,h2,h3{margin:0;text-wrap:balance}
+
+/* ---------- 身份选择 ---------- */
+#login{min-height:100%;padding-block:48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background:radial-gradient(1200px 500px at 15% -10%,var(--accent-soft),transparent 60%),var(--bg)}
+.login-in{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:44px;height:44px;border-radius:11px;background:var(--accent);color:var(--accent-fg);display:grid;place-items:center;font-weight:700;font-size:15px;flex:none}
+.brand b{display:block;font-size:17px;color:var(--accent)}
+.brand small{display:block;font-size:11px;letter-spacing:.08em;color:var(--muted);font-family:var(--f-mono)}
+.login-head h1{font-size:28px;font-weight:700}
+.login-head p{margin:6px 0 0;color:var(--muted);max-width:62ch}
+.role-groups{display:flex;flex-direction:column;gap:22px}
+.rg-title{font-size:12px;letter-spacing:.08em;color:var(--muted);margin-bottom:10px}
+.role-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.role-card{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow);transition:border-color .15s,transform .15s}
+.role-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.role-card .rc-top{display:flex;align-items:center;gap:10px}
+.role-card .av{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;font-weight:700;color:#fff;flex:none}
+.role-card b{font-size:15px}
+.role-card .dept{font-size:12px;color:var(--muted)}
+.role-card p{margin:0;font-size:13px;color:var(--muted)}
+.role-card .rc-foot{display:flex;justify-content:space-between;font-size:12px;color:var(--faint);border-top:1px dashed var(--line);padding-top:8px}
+.login-note{font-size:12px;color:var(--faint)}
+
+/* ---------- 主框架 ---------- */
+#app{display:flex;height:100%}
+#nav{width:228px;flex:none;background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;padding-top:18px}
+#nav .brand{padding:0 18px 16px;border-bottom:1px solid var(--line)}
+.nav-scroll{flex:1;overflow:auto;padding:10px 10px}
+.nav-sec{font-size:12px;color:var(--faint);padding:12px 10px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;padding:8px 10px;border-radius:8px;text-align:left;color:var(--fg)}
+.nav-item svg{width:17px;height:17px;color:var(--muted);flex:none}
+.nav-item:hover{background:var(--surface2)}
+.nav-item.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.nav-item.on svg{color:var(--accent)}
+.nav-item .tag{margin-left:auto;font-size:10px;padding:1px 6px;border-radius:5px;background:var(--accent-soft);color:var(--accent);font-weight:600}
+.nav-item .tag.n{background:var(--bad);color:#fff}
+.me{border-top:1px solid var(--line);padding:12px 14px;display:flex;align-items:center;gap:10px}
+.me .av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;flex:none}
+.me b{display:block;font-size:13px}.me span{font-size:12px;color:var(--muted)}
+.me button{margin-left:auto;border:1px solid var(--line);background:var(--surface);border-radius:7px;font-size:12px;padding:4px 8px;white-space:nowrap}
+#main{flex:1;min-width:0;overflow:auto}
+.page{padding-block:24px 48px;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));max-width:1440px}
+.ph{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.ph h1{font-size:26px;font-weight:700}
+.ph p{margin:4px 0 0;color:var(--muted)}
+.ph .grow{flex:1;min-width:0}
+.mobile-top{display:none}
+
+/* 通用组件 */
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 14px;font-weight:500;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn.pri:hover{filter:brightness(1.08);color:var(--accent-fg)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn.danger:hover{border-color:var(--bad);color:var(--bad)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:1px 8px;border-radius:6px;font-weight:500;white-space:nowrap}
+.p-ok{background:var(--ok-soft);color:var(--ok)}.p-warn{background:var(--warn-soft);color:var(--warn)}.p-bad{background:var(--bad-soft);color:var(--bad)}
+.p-vio{background:var(--vio-soft);color:var(--vio)}.p-acc{background:var(--accent-soft);color:var(--accent)}.p-mute{background:var(--surface2);color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.panel-h{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.panel-h h3{font-size:15px;font-weight:600}
+.panel-h .r{margin-left:auto}
+.panel-b{padding:14px 16px}
+.tabs{display:flex;gap:22px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
+.tabs button{border:0;background:none;padding:8px 0 10px;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button.on{color:var(--fg);font-weight:600;border-color:var(--accent)}
+.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.toolbar .count{color:var(--muted)}.toolbar .count b{color:var(--fg)}
+.search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 10px;margin-left:auto;min-width:0}
+.search input{border:0;background:none;outline:none;color:var(--fg);width:200px;max-width:100%}
+.search svg{width:15px;height:15px;color:var(--faint)}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.grid2{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:16px}
+.kpi{padding:14px 16px}
+.kpi .l{font-size:12px;color:var(--muted)}
+.kpi .v{font-size:26px;font-weight:700;margin-top:2px}
+.kpi .v small{font-size:13px;font-weight:500;color:var(--muted);margin-left:2px}
+.kpi .d{font-size:12px;margin-top:2px}
+.up{color:var(--ok)}.down{color:var(--bad)}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-weight:500;color:var(--muted);font-size:12px;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--surface2)}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+
+/* 智能体卡片（参考截图） */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden;position:relative}
+.card::before{content:"";height:3px;background:var(--accent);opacity:.75}
+.card.off{opacity:.62}
+.card.off::before{background:var(--faint)}
+.card-b{padding:14px 16px 0;display:flex;flex-direction:column;gap:10px;flex:1}
+.c-top{display:flex;gap:10px;align-items:flex-start}
+.c-ic{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:16px;flex:none}
+.c-name{min-width:0;flex:1}
+.c-name b{font-size:15px}
+.c-name .mono{color:var(--muted);margin-left:6px;font-size:11px}
+.c-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+.c-desc{margin:0;font-size:13px;color:var(--muted);min-height:40px}
+.c-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);gap:8px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.c-meta .chips{display:flex;gap:4px;flex-wrap:wrap}
+.chip{font-size:11px;padding:0 6px;border:1px solid var(--line);border-radius:5px;color:var(--muted);white-space:nowrap}
+.c-foot{display:flex;align-items:center;gap:4px;padding:10px 12px 12px 10px}
+.ic-btn{border:0;background:none;width:30px;height:30px;border-radius:7px;display:grid;place-items:center;color:var(--muted)}
+.ic-btn:hover{background:var(--surface2);color:var(--fg)}
+.ic-btn svg{width:16px;height:16px}
+.c-foot .btn{margin-left:auto}
+.switch{width:38px;height:22px;border-radius:11px;background:var(--line);border:0;position:relative;flex:none;transition:background .15s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.switch.on{background:var(--accent)}.switch.on::after{left:19px}
+.switch[disabled]{cursor:default}
+
+/* 工作台 */
+.hello{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:18px 20px;margin-bottom:16px}
+.hello h2{font-size:20px}
+.hello p{margin:2px 0 0;color:var(--muted)}
+.todo{display:flex;gap:12px;padding:11px 16px;border-bottom:1px solid var(--line);align-items:flex-start}
+.todo:last-child{border-bottom:0}
+.todo .dot{width:8px;height:8px;border-radius:50%;margin-top:7px;flex:none}
+.todo .t{flex:1;min-width:0}
+.todo .t small{display:block;color:var(--muted);font-size:12px}
+.quick{display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);align-items:center}
+.quick:last-child{border-bottom:0}
+.quick .c-ic{width:34px;height:34px;font-size:14px;border-radius:9px}
+.quick .t{flex:1;min-width:0}.quick .t small{display:block;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flow{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted)}
+.flow span{background:var(--surface2);border:1px solid var(--line);padding:3px 8px;border-radius:6px;color:var(--fg)}
+
+/* 对话 */
+.chat{display:grid;grid-template-columns:260px minmax(0,1fr);height:calc(100vh - 150px);min-height:480px}
+.chat-list{border-right:1px solid var(--line);overflow:auto}
+.chat-list button{display:flex;gap:10px;align-items:center;width:100%;border:0;background:none;padding:10px 14px;text-align:left;border-bottom:1px solid var(--line)}
+.chat-list button.on{background:var(--accent-soft)}
+.chat-list .c-ic{width:32px;height:32px;font-size:13px;border-radius:8px}
+.chat-list small{display:block;color:var(--muted);font-size:12px}
+.chat-main{display:flex;flex-direction:column;min-width:0}
+.msgs{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:14px}
+.msg{max-width:78%;padding:10px 14px;border-radius:12px;white-space:pre-wrap}
+.msg.u{align-self:flex-end;background:var(--accent);color:var(--accent-fg);border-bottom-right-radius:4px}
+.msg.a{align-self:flex-start;background:var(--surface2);border:1px solid var(--line);border-bottom-left-radius:4px}
+.msg .src{display:block;margin-top:8px;font-size:11px;color:var(--muted)}
+.suggest{display:flex;gap:8px;flex-wrap:wrap;padding:0 18px 10px}
+.suggest button{border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:4px 12px;font-size:12px;color:var(--muted)}
+.suggest button:hover{color:var(--accent);border-color:var(--accent)}
+.composer{display:flex;gap:10px;padding:12px 16px;border-top:1px solid var(--line)}
+.composer input{flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:9px 12px;background:var(--surface);color:var(--fg)}
+
+/* 订单入库 */
+.split{display:grid;grid-template-columns:320px minmax(0,1fr);gap:16px}
+.q-item{display:flex;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);width:100%;border-left:3px solid transparent;background:none;border-top:0;border-right:0;text-align:left}
+.q-item.on{background:var(--accent-soft);border-left-color:var(--accent)}
+.q-item .ch{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font-size:12px;font-weight:700;color:#fff;flex:none}
+.q-item .t{flex:1;min-width:0}.q-item small{display:block;color:var(--muted);font-size:12px}
+.raw{background:var(--surface2);border:1px dashed var(--line);border-radius:8px;padding:12px;white-space:pre-wrap;font-size:13px;color:var(--muted)}
+.conf{display:inline-block;width:60px;height:6px;border-radius:3px;background:var(--line);vertical-align:middle;margin-right:6px;overflow:hidden}
+.conf i{display:block;height:100%;background:var(--ok)}
+.miss td{background:var(--bad-soft)}
+.steps{display:flex;gap:0;flex-wrap:wrap;margin-bottom:14px}
+.steps div{flex:1;min-width:110px;font-size:12px;color:var(--muted);padding:8px 10px;border-top:3px solid var(--line)}
+.steps div.done{border-color:var(--ok);color:var(--fg)}
+.steps div.cur{border-color:var(--accent);color:var(--accent);font-weight:600}
+
+/* 短驳 */
+.plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.plan{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:10px;text-align:left}
+.plan.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.plan h4{margin:0;font-size:15px;display:flex;align-items:center;gap:8px}
+.plan dl{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin:0}
+.plan dt{font-size:12px;color:var(--muted)}.plan dd{margin:0;font-weight:600;font-size:16px}
+.cons{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.cons .ok{color:var(--ok)}.cons .no{color:var(--warn)}
+.routes svg{width:100%;height:auto;display:block}
+
+/* 柱状 */
+.bars{display:flex;flex-direction:column;gap:9px}
+.bar{display:grid;grid-template-columns:130px minmax(0,1fr) 70px;gap:10px;align-items:center;font-size:13px}
+.bar .tr{height:10px;background:var(--surface2);border-radius:5px;overflow:hidden}
+.bar .tr i{display:block;height:100%;background:var(--accent);border-radius:5px}
+.bar .n{text-align:right;color:var(--muted)}
+
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:8px;font-size:13px;box-shadow:var(--shadow);z-index:50}
+
+@media (max-width:1100px){.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2,.split{grid-template-columns:minmax(0,1fr)}.plans{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:760px){
+  #app{flex-direction:column;height:auto;min-height:100%}
+  #nav{display:none;width:100%;border-right:0;border-bottom:1px solid var(--line)}
+  #nav.open{display:flex}
+  #nav .brand{display:none}
+  .mobile-top{display:flex;align-items:center;gap:10px;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--surface);border-bottom:1px solid var(--line)}
+  .mobile-top b{color:var(--accent)}
+  .mobile-top .btn{margin-left:auto}
+  #main{overflow:visible}
+  .page{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .chat{grid-template-columns:minmax(0,1fr);height:auto}
+  .chat-list{display:flex;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line)}
+  .chat-list button{flex:none;width:auto;border-bottom:0}
+  .msgs{min-height:360px}
+  .search{margin-left:0;width:100%}.search input{width:100%}
+  .bar{grid-template-columns:90px minmax(0,1fr) 56px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="login"></div>
+<div id="app" hidden>
+  <div class="mobile-top"><div class="logo" style="width:30px;height:30px;font-size:11px;border-radius:8px">群智</div><b>群智通智能体</b><button class="btn sm" id="menuBtn" type="button">菜单</button></div>
+  <aside id="nav"></aside>
+  <main id="main"></main>
+</div>
+<div id="toast" hidden></div>
+
+<script>
+/* ================= 模拟数据 ================= */
+const ROLES = [
+  {id:'sales',name:'销售经理',dept:'销售中心 · AR',color:'#2f6bf0',user:'李明',desc:'商机评估、客户跟进、报价与投标合规',group:'前端业务'},
+  {id:'presales',name:'售前方案',dept:'解决方案部 · SR',color:'#7a5af5',user:'周静',desc:'需求调研、物流规划方案、物流仿真',group:'前端业务'},
+  {id:'order',name:'订单专员',dept:'运营中心 · 订单组',color:'#0e9f8a',user:'王芳',desc:'多渠道订单录入、复核写入与拆单',group:'交付运营'},
+  {id:'dispatch',name:'运输调度',dept:'运营中心 · 调度组',color:'#e0761b',user:'张强',desc:'短驳路线、干线配载、在途异常处置',group:'交付运营'},
+  {id:'warehouse',name:'仓储主管',dept:'运营中心 · 仓储',color:'#3b8fd6',user:'刘洋',desc:'库存分析、可分配量、报缺与 8D 报告',group:'交付运营'},
+  {id:'finance',name:'结算专员',dept:'财务部 · 结算',color:'#c2477a',user:'陈思',desc:'运费核算、账单生成、对账差异分析',group:'交付运营'},
+  {id:'mgmt',name:'运营总监',dept:'管理层',color:'#334a75',user:'赵总',desc:'每日协同决策、经营指标、审批把关',group:'管理与平台'},
+  {id:'admin',name:'平台管理员',dept:'信息部',color:'#18233a',user:'Admin',desc:'用户与权限、插件与连接器、模型与审计',group:'管理与平台'},
+];
+const C = {blue:'#2f6bf0',teal:'#0e9f8a',vio:'#7a5af5',orange:'#e0761b',pink:'#c2477a',sky:'#3b8fd6',navy:'#334a75',green:'#17a36b',gray:'#8a94a8'};
+// status: run 运行中 / pilot 试点中 / plan 二期规划
+const AGENTS = [
+  {id:'xy',name:'小遥 · 通用助手',ch:'遥',c:C.blue,v:'0.9.9',st:'run',kind:'对话',lv:'L1',desc:'日常问答、写作与行程安排，可调用公司制度知识库。',owner:'qunzhitong-core',calls:54190,roles:['*'],tools:['知识库'],def:true,
+    demo:[['帮我写一封延期发货的致歉邮件','好的，以下是草稿：\n\n尊敬的客户：\n因上游零部件到货延迟，贵司订单 SO-20261121-0087 预计延后 1 天送达（11 月 23 日上午）。我们已安排优先装车，并将在发运后第一时间同步运单号。给您带来不便，深表歉意。\n\n需要我改成更正式的语气吗？']]},
+  {id:'sop',name:'制度与 SOP 问答',ch:'规',c:C.gray,v:'1.2.0',st:'run',kind:'知识库',lv:'L1',desc:'公司制度、作业 SOP、安全规范的检索问答，回答附带出处。',owner:'qunzhitong-core',calls:21877,roles:['*'],tools:['知识库'],
+    demo:[['危险品车辆进厂需要哪些手续？','根据《厂区车辆管理 SOP v3.2》第 4.3 条：\n1. 提前 24 小时在门禁系统登记；\n2. 司机出示危险品运输从业资格证；\n3. 车辆配备灭火器两具并通过安检；\n4. 由安全员陪同进入指定卸货区。','来源：厂区车辆管理 SOP v3.2 · 第 4.3 条']]},
+  {id:'opp',name:'商机初评助手',ch:'商',c:C.blue,v:'1.0.3',st:'run',kind:'知识库',lv:'L1',desc:'根据客户与项目信息给出商机评分、风险点和跟进建议。',owner:'qunzhitong-core',calls:3120,roles:['sales'],tools:['知识库','CRM 只读'],batch:'一期',
+    demo:[['评估一下某主机厂苏州工厂的 VMI 仓项目','商机评分：78 / 100（建议推进）\n\n优势：与现有昆山线路重合度 65%，可复用 2 个仓。\n风险：客户要求 2 小时 JIT 补货，现有短驳车队需扩 3 台；账期 90 天偏长。\n建议：本周约客户物流部做现场调研，同时让售前出初版仓网方案。','参考：近 12 个月同类 VMI 项目 7 个']]},
+  {id:'follow',name:'客户跟进助手',ch:'跟',c:C.sky,v:'0.8.1',st:'run',kind:'工作流',lv:'L1',desc:'汇总客户近期订单、投诉与拜访记录，生成跟进纪要和待办。',owner:'qunzhitong-core',calls:1874,roles:['sales'],tools:['知识库','OWTB 只读']},
+  {id:'quote',name:'报价测算助手',ch:'价',c:C.orange,v:'1.1.0',st:'run',kind:'工作流',lv:'L2',desc:'按线路、车型、时效和合同费率测算报价区间，给出毛利预估。',owner:'qunzhitong-core',calls:2655,roles:['sales','presales'],tools:['计费规则引擎','科大定价组件'],batch:'一期',
+    demo:[['昆山到上海安亭，9.6 米厢车，每日 4 趟，报个价','测算结果（含税）：\n· 单趟 1,180 – 1,260 元\n· 月度（26 天）约 12.3 – 13.1 万元\n· 预估毛利率 14% – 18%\n\n依据：合同费率表 2026Q4、近 3 个月同线路实际成本。高峰时段需加收 8% 拥堵费，是否计入？']]},
+  {id:'bid',name:'投标偏离审核',ch:'标',c:C.vio,v:'2.0.1',st:'run',kind:'知识库',lv:'L1',desc:'逐条比对招标文件与公司能力及合同红线，标出偏离与合规风险。',owner:'qunzhitong-core',calls:4402,roles:['sales','presales'],tools:['知识库','OCR 插件'],batch:'一期',
+    demo:[['帮我审一下这份招标文件的付款和赔付条款','发现 3 处偏离：\n1. 付款周期 120 天 → 公司红线 90 天（高风险）\n2. 货损按货值 100% 赔付，无上限 → 建议加单票上限\n3. 要求 7×24 小时响应 15 分钟 → 现有值班机制为 30 分钟\n\n建议在偏离表中对第 1、2 条提出澄清。','依据：合同红线清单 v2026.10、历史中标偏离表 23 份']]},
+  {id:'survey',name:'需求调研助手',ch:'调',c:C.vio,v:'0.6.0',st:'run',kind:'工作流',lv:'L1',desc:'生成调研提纲、整理访谈记录，并输出结构化需求清单。',owner:'qunzhitong-core',calls:932,roles:['presales'],tools:['知识库']},
+  {id:'plan',name:'物流规划方案专家',ch:'规',c:C.blue,v:'1.2.6',st:'run',kind:'Agent',lv:'L1',desc:'仓网布局、干线路径与库存分布的规划测算与多方案比选。',owner:'qunzhitong-core',calls:6240,roles:['presales'],tools:['OR-Tools 求解器','知识库'],batch:'一期'},
+  {id:'sim',name:'物流仿真专家',ch:'仿',c:C.gray,v:'0.3.0',st:'plan',kind:'长任务',lv:'L1',desc:'对规划方案做仓内作业和运输仿真，评估瓶颈与产能。二期按需接入 DSH。',owner:'qunzhitong-core',calls:0,roles:['presales'],tools:['DSH（二期）'],batch:'二期'},
+  {id:'ord',name:'多模态订单自动入库',ch:'单',c:C.teal,v:'1.0.0',st:'pilot',kind:'工作流',lv:'L3',desc:'邮件、微信、照片自动识别为订单事件，缺项拦截，复核后写入 OWTB。',owner:'bridge@qunzhitong.local',calls:12408,roles:['order','dispatch'],tools:['OCR 插件','Bridge · OWTB'],batch:'试点一',page:'orderin'},
+  {id:'split',name:'智能拆单',ch:'拆',c:C.teal,v:'0.5.2',st:'run',kind:'工作流',lv:'L2',desc:'按仓库库存与线路匹配给出拆单建议，订单专员确认后执行。',owner:'bridge@qunzhitong.local',calls:2210,roles:['order'],tools:['规则引擎','Bridge · WMS']},
+  {id:'track',name:'订单状态跟踪',ch:'踪',c:C.sky,v:'1.0.4',st:'run',kind:'对话',lv:'L1',desc:'用自然语言查询订单、运单和签收状态，支持批量导出。',owner:'bridge@qunzhitong.local',calls:9732,roles:['order','sales','dispatch'],tools:['Bridge · OWTB','Bridge · TMS'],
+    demo:[['SO-20261121-0087 到哪了？','订单 SO-20261121-0087（某主机厂安亭总装）\n· 11-21 08:12 昆山 2 号仓出库\n· 11-21 09:40 运单 TMS-558213 已发车，车牌 苏E·7K216\n· 预计 11:05 到达，当前准时概率 92%','数据：OWTB / TMS 实时查询']]},
+  {id:'route',name:'短驳路线优化',ch:'驳',c:C.orange,v:'1.1.0',st:'pilot',kind:'工作流',lv:'L2',desc:'在载重、时窗、道路限制下生成可比较的候选方案，调度选案后派车。',owner:'bridge@qunzhitong.local',calls:3816,roles:['dispatch'],tools:['OR-Tools 求解器','Bridge · TMS','路网服务'],batch:'试点二',page:'route'},
+  {id:'load',name:'干线配载优化',ch:'载',c:C.gray,v:'0.2.0',st:'plan',kind:'工作流',lv:'L2',desc:'干线车辆配载与装载方案，提升满载率。',owner:'bridge@qunzhitong.local',calls:0,roles:['dispatch'],tools:['装箱算法'],batch:'二期'},
+  {id:'abn',name:'运输异常预警',ch:'警',c:C.gray,v:'0.4.0',st:'plan',kind:'Agent',lv:'L2',desc:'结合 GPS 轨迹和时效预测发现延误，按预案生成处置建议并通知责任人。',owner:'bridge@qunzhitong.local',calls:0,roles:['dispatch','mgmt'],tools:['GPS 事件','预案库'],batch:'二期'},
+  {id:'inv',name:'库存分析助手',ch:'库',c:C.sky,v:'0.9.0',st:'run',kind:'工作流',lv:'L1',desc:'查看库存、可分配量和缺货风险，按品类给出补货提示。',owner:'qunzhitong-core',calls:4180,roles:['warehouse','order'],tools:['Bridge · WMS','科大库存组件'],
+    demo:[['昆山 2 号仓哪些料号有缺货风险？','未来 3 天缺货风险 TOP3：\n1. 前保险杠支架 A-2231：可分配 120，需求 410（高）\n2. 线束卡扣 C-0915：可分配 3,200，需求 4,100（中）\n3. 门板饰条 D-7720：可分配 260，需求 300（低）\n\n建议对 A-2231 发起报缺并联系供应商加急。','数据：WMS 库存快照 11-21 08:00']]},
+  {id:'8d',name:'报缺与 8D 报告',ch:'8D',c:C.pink,v:'0.7.3',st:'run',kind:'知识库',lv:'L1',desc:'根据异常记录和历史案例生成报缺反馈与 8D 报告初稿。',owner:'qunzhitong-core',calls:1046,roles:['warehouse'],tools:['知识库','8D 案例库']},
+  {id:'fee',name:'运费核算',ch:'费',c:C.pink,v:'1.0.0',st:'run',kind:'工作流',lv:'L2',desc:'按版本化计费规则核算运费并生成账单，金额由规则引擎计算。',owner:'qunzhitong-core',calls:2353,roles:['finance'],tools:['计费规则引擎','Bridge · TMS']},
+  {id:'recon',name:'对账差异分析',ch:'账',c:C.vio,v:'0.8.0',st:'run',kind:'Agent',lv:'L2',desc:'比对客户账单与我方运单，列出差异并归因到里程、车型或时效。',owner:'qunzhitong-core',calls:1588,roles:['finance','mgmt'],tools:['计费规则引擎','ERP 只读'],
+    demo:[['10 月某主机厂账单有哪些差异？','10 月账单共 1,284 票，差异 37 票，金额差 -18,420 元：\n· 里程口径不同 21 票（-11,060 元）\n· 车型降级未调价 9 票（-5,940 元）\n· 夜间加价未计 7 票（-1,420 元）\n\n建议先与客户确认里程口径，其余 16 票可按合同条款直接申诉。']]},
+  {id:'coop',name:'每日协同决策',ch:'协',c:C.navy,v:'0.5.0',st:'plan',kind:'定时工作流',lv:'L2',desc:'每天 9 点冻结同一快照，并行调用预测、库存、定价，汇聚冲突与待审批项。',owner:'qunzhitong-core',calls:0,roles:['mgmt'],tools:['科大定价/库存/预测','Dify 定时触发'],batch:'二期'},
+];
+const KB = [
+  {n:'公司制度与作业 SOP',docs:186,upd:'11-18',roles:['*']},
+  {n:'合同红线与投标模板',docs:64,upd:'11-12',roles:['sales','presales','mgmt']},
+  {n:'历史方案与案例库',docs:121,upd:'11-03',roles:['presales','sales']},
+  {n:'订单录入规范与客户字段映射',docs:42,upd:'11-20',roles:['order']},
+  {n:'异常处理预案库',docs:58,upd:'11-15',roles:['dispatch','mgmt','warehouse']},
+  {n:'8D 案例与质量规范',docs:93,upd:'11-09',roles:['warehouse']},
+  {n:'计费规则说明（版本化）',docs:27,upd:'11-01',roles:['finance','sales']},
+];
+const ORDERS = [
+  {id:'m1',ch:'邮',chc:C.blue,from:'某主机厂 物流部 <logistics@…>',t:'08:41',title:'11/22 安亭总装补货需求',st:'待复核',
+   raw:'王工好，\n明天（11/22）安亭总装需补以下物料，上午 10 点前到：\n前保险杠支架 A-2231 × 240\n线束卡扣 C-0915 × 1,500\n收货：安亭总装 3 号门，联系人 孙工 138****6621\n谢谢！',
+   f:[['客户','某主机厂',99],['收货地','安亭总装 3 号门',97],['要求到达','2026-11-22 10:00 前',95],['物料 1','A-2231 前保险杠支架 × 240',98],['物料 2','C-0915 线束卡扣 × 1,500',96],['联系人','孙工 138****6621',93],['发货仓','昆山 2 号仓（按库存匹配）',88]]},
+  {id:'w1',ch:'微',chc:C.green,from:'微信群「安亭项目对接」',t:'09:05',title:'追加门板饰条',st:'缺项',
+   raw:'[语音转文字] 小王，门板饰条再加 80 套，跟上午那批一起走，地址一样。',
+   f:[['客户','某主机厂',90],['收货地','安亭总装 3 号门（沿用上一单）',72],['要求到达','',0],['物料 1','D-7720 门板饰条 × 80',91],['合并发运','与 m1 合并',80]]},
+  {id:'p1',ch:'图',chc:C.orange,from:'手机拍照上传 · 张强',t:'09:22',title:'手写提货单（嘉定零部件园）',st:'待复核',
+   raw:'[图片 OCR] 提货单 No.0035871\n提货地：嘉定零部件园 B5\n货物：仪表台骨架 × 36 托\n提货时间：11/21 14:00-16:00\n送达：昆山 2 号仓',
+   f:[['单据号','0035871',99],['提货地','嘉定零部件园 B5',94],['货物','仪表台骨架 × 36 托',89],['提货时窗','2026-11-21 14:00–16:00',92],['送达','昆山 2 号仓',96]]},
+];
+const PLANS = [
+  {id:'A',name:'成本优先',cost:8640,km:412,veh:5,ontime:91.2,util:88,tag:'p-ok',note:'5 台车，其中 1 台跑 3 个点，晚到风险集中在安亭 3 号门。'},
+  {id:'B',name:'准时优先',cost:9480,km:438,veh:6,ontime:98.6,util:76,tag:'p-acc',note:'多用 1 台 4.2 米车，所有时窗留 20 分钟以上余量。'},
+  {id:'C',name:'均衡',cost:8970,km:421,veh:5,ontime:96.1,util:84,tag:'p-vio',note:'推荐方案。与人工排线相比成本下降 7.4%。',rec:true},
+];
+const APPROVALS = [
+  {id:'AP-1093',type:'订单写入 OWTB',agent:'多模态订单自动入库',body:'某主机厂 · 安亭总装 · 2 个料号 · 11/22 10:00 前',key:'idem-ord-7f3a21',roles:['order','mgmt','admin'],by:'王芳'},
+  {id:'AP-1094',type:'派车下发 TMS',agent:'短驳路线优化',body:'方案 C（均衡）· 5 台车 · 18 单 · 预计费用 ¥8,970',key:'idem-rt-19bd04',roles:['dispatch','mgmt','admin'],by:'张强'},
+  {id:'AP-1095',type:'账单申诉提交',agent:'对账差异分析',body:'某主机厂 10 月账单 · 16 票 · 申诉金额 ¥7,360',key:'idem-rc-a0c552',roles:['finance','mgmt','admin'],by:'陈思'},
+  {id:'AP-1096',type:'拆单执行',agent:'智能拆单',body:'SO-20261121-0102 拆为昆山 2 号仓 + 嘉定 1 号仓两单',key:'idem-sp-e211f9',roles:['order','mgmt','admin'],by:'王芳'},
+];
+const HOME = {
+  sales:{kpi:[['本月新增商机','12','个','+3','up'],['投标审核','5','份','2 份有高风险','down'],['报价测算','28','次','+18%','up'],['知识问答采纳率','96.4','%','≥95% 达标','up']],
+    todo:[['bad','投标文件「某新能源主机厂 2027 年度运输」付款条款偏离红线','投标偏离审核 · 今天 10:12'],['warn','客户「某主机厂」3 天未跟进，建议本周拜访','客户跟进助手'],['acc','苏州 VMI 仓项目待出报价','报价测算助手']]},
+  presales:{kpi:[['在做方案','4','个',''],['调研纪要','9','份','本月'],['规划测算','17','次','+5','up'],['仿真任务','—','','二期上线']],
+    todo:[['warn','苏州 VMI 仓网规划：需补充客户日均出库量','物流规划方案专家'],['acc','整理 11/20 某电池厂调研录音','需求调研助手'],['mute','物流仿真能力规划中（二期 · DSH）','']]},
+  order:{kpi:[['今日新订单','46','单','邮件 21 · 微信 17 · 照片 8'],['待复核','3','单','',''],['自动识别准确率','97.8','%','字段级','up'],['重复写入','0','次','防重已开启','up']],
+    todo:[['bad','微信订单「追加门板饰条」缺少到达时间，已拦截','多模态订单自动入库 · 09:05'],['warn','2 单待复核后写入 OWTB','订单入库队列'],['acc','SO-20261121-0102 拆单建议待确认','智能拆单']]},
+  dispatch:{kpi:[['今日短驳单','18','单','6 台可用车'],['方案生成','12','秒','求解耗时'],['预计准时率','96.1','%','方案 C','up'],['较人工节省','7.4','%','成本','up']],
+    todo:[['warn','今日短驳方案已生成，待选择并提交派车审批','短驳路线优化 · 08:30'],['acc','嘉定零部件园提货单已识别（14:00–16:00）','订单入库'],['mute','运输异常预警二期上线','']]},
+  warehouse:{kpi:[['在库料号','3,812','',''],['缺货风险','3','个','未来 3 天','down'],['库容利用率','82','%',''],['8D 报告','2','份','待提交']],
+    todo:[['bad','A-2231 前保险杠支架可分配量不足（120 / 410）','库存分析助手'],['warn','10 月货损 8D 报告初稿待确认','报缺与 8D 报告']]},
+  finance:{kpi:[['本月待出账单','14','份',''],['差异票数','37','票','10 月某主机厂'],['差异金额','-1.84','万','','down'],['规则版本','v2026.11','','11-01 生效']],
+    todo:[['warn','某主机厂 10 月对账差异 37 票待处理','对账差异分析'],['acc','16 票申诉已提交审批','审批中心']]},
+  mgmt:{kpi:[['在用智能体','16','个','一期目标 8–10','up'],['本周调用','4.1','万次','+12%','up'],['待我审批','4','项',''],['写操作留痕','100','%','出域 0 · 越权 0','up']],
+    todo:[['warn','4 项写操作待审批（订单、派车、申诉、拆单）','审批中心'],['acc','两个试点本周影子运行对比报告已生成','短驳 / 订单入库'],['mute','每日协同决策（9 点）二期上线','']]},
+  admin:{kpi:[['用户','236','人','8 个角色'],['智能体','20','个','运行 14 · 试点 2 · 规划 4'],['插件','7','个','1 个待升级'],['P95 响应','2.1','秒','≤3s 达标','up']],
+    todo:[['warn','科大定价组件 v0.9 接口契约待确认','插件管理'],['acc','新入职 3 人待分配角色','用户与角色'],['mute','模型网关：Qwen 主模型负载 63%','模型网关']]},
+};
+const PLUGINS = [
+  ['OR-Tools 路径求解器','运筹求解','Apache 2.0','v9.11','run','短驳路线优化、物流规划方案专家'],
+  ['HiGHS 线性规划','运筹求解','MIT','v1.7','run','人力计划（二期）'],
+  ['PaddleOCR 文档识别','OCR','Apache 2.0','v2.8','run','多模态订单入库、投标偏离审核'],
+  ['Qwen-VL 视觉理解','多模态','开源权重','—','run','手写单、照片订单'],
+  ['科大定价组件','专业智能体','合作交付','v0.9','pilot','报价测算、每日协同'],
+  ['科大库存 / 预测组件','专业智能体','合作交付','v0.6','plan','库存分析、每日协同'],
+  ['Bridge 工具集','业务系统','自研','v1.3','run','订单、调度、结算类智能体'],
+];
+const CONNECTORS = [
+  ['OWTB / OMS（订单）','读 + 写（审批）','run','12,408'],['TMS（运输）','读 + 写（审批）','run','8,921'],['WMS（仓储）','只读','run','6,377'],
+  ['ERP / 客户系统','只读','warn','待确认'],['GPS / IoT 轨迹','事件推送','plan','二期'],['路网与道路限制','只读','warn','来源待定'],['邮件 / 微信 / 钉钉适配器','读 + 发送','pilot','模拟投递'],
+];
+const MODELS = [
+  ['主推理模型','Qwen 大参数 / MoE（私有化）','Agent 编排、处置建议、报告','63%'],['轻量模型','同系列小参数','字段抽取、意图路由','41%'],
+  ['多模态 / OCR','PaddleOCR + Qwen-VL','订单照片、手写单','28%'],['向量与重排','bge-m3 / bge-reranker','知识库检索','19%'],
+];
+const TRACES = [
+  ['09:22:41','张强','多模态订单自动入库','OCR → 抽取 → 校验','成功','1.8s'],['09:05:13','系统','多模态订单自动入库','缺项拦截：要求到达','已拦截','0.9s'],
+  ['08:30:02','张强','短驳路线优化','求解 3 方案','成功','12.4s'],['08:12:55','李明','投标偏离审核','检索 23 份 + 比对','成功','2.6s'],
+  ['07:58:19','周静','物流规划方案专家','越权访问：结算数据','已拒绝','0.1s'],
+];
+
+/* ================= 状态 ================= */
+let S = {role:null, page:'home', agentTab:'mine', q:'', chatAgent:null, chats:{}, order:'m1', ordersDone:{}, plan:null, planRun:false, approvals:{}, enabled:{}};
+try{ const r = localStorage.getItem('qzt-role'); if(r && ROLES.find(x=>x.id===r)) S.role=r; }catch(e){}
+AGENTS.forEach(a=>S.enabled[a.id] = a.st!=='plan');
+
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt = n=>n.toLocaleString('en-US');
+const role = ()=>ROLES.find(r=>r.id===S.role);
+const isAdmin = ()=>S.role==='admin';
+const myAgents = ()=>AGENTS.filter(a=>isAdmin() || a.roles.includes('*') || a.roles.includes(S.role));
+const myApprovals = ()=>APPROVALS.filter(a=>a.roles.includes(S.role));
+const pendingCount = ()=>myApprovals().filter(a=>!S.approvals[a.id]).length;
+function toast(t){const el=$('#toast');el.textContent=t;el.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>el.hidden=true,2200)}
+
+const IC = {
+  home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  chat:'<path d="M4 5h16v11H8l-4 4z"/>',
+  agent:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4.5-6 8-6s7 2 8 6"/>',
+  order:'<path d="M5 3h10l4 4v14H5z"/><path d="M9 12h6M9 16h6M9 8h3"/>',
+  route:'<circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/>',
+  check:'<path d="M4 12.5 9 17 20 6"/>',
+  book:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/>',
+  chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  users:'<circle cx="9" cy="8" r="3.5"/><path d="M2 20c.8-3.5 3.5-5 7-5s6.2 1.5 7 5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 15c2 .6 3.4 2.2 4 5"/>',
+  plug:'<path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4"/>',
+  link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+  cpu:'<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>',
+  shield:'<path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6z"/>',
+  sync:'<path d="M20 11a8 8 0 0 0-14.5-4M4 13a8 8 0 0 0 14.5 4"/><path d="M5 3v4h4M19 21v-4h-4"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+  copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',
+  share:'<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="m8.2 11 7.6-3.8M8.2 13l7.6 3.8"/>',
+  trace:'<path d="M3 12h4l3-7 4 14 3-7h4"/>',
+};
+const ico = k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[k]}</svg>`;
+
+/* ================= 菜单（按角色） ================= */
+function navFor(r){
+  const w = [{id:'home',n:'工作台',i:'home'},{id:'chat',n:'对话',i:'chat'},{id:'agents',n:'智能体',i:'agent'}];
+  const biz = [];
+  if(['order','dispatch','admin','mgmt'].includes(r)) biz.push({id:'orderin',n:'订单自动入库',i:'order',tag:'试点一'});
+  if(['dispatch','admin','mgmt'].includes(r)) biz.push({id:'route',n:'短驳路线优化',i:'route',tag:'试点二'});
+  if(r==='mgmt'||r==='admin') biz.push({id:'coop',n:'每日协同',i:'sync',tag:'二期'});
+  if(myApprovals().length) biz.push({id:'approve',n:'审批中心',i:'check',count:true});
+  const cfg = [{id:'kb',n:'知识库',i:'book'}];
+  if(r==='mgmt'||r==='admin') cfg.push({id:'usage',n:'用量与效果',i:'chart'});
+  const sys = r==='admin' ? [{id:'users',n:'用户与角色',i:'users'},{id:'plugins',n:'插件',i:'plug'},{id:'connectors',n:'Bridge 连接器',i:'link'},{id:'models',n:'模型网关',i:'cpu'},{id:'audit',n:'审计与 Trace',i:'shield'}] : [];
+  return [['工作区',w],['业务',biz],['资源',cfg],['系统',sys]].filter(s=>s[1].length);
+}
+
+/* ================= 入口：身份选择 ================= */
+function renderLogin(){
+  $('#app').hidden=true; const L=$('#login'); L.hidden=false;
+  const groups = [...new Set(ROLES.map(r=>r.group))];
+  L.innerHTML = `<div class="login-in">
+    <div class="brand"><div class="logo">群智</div><div><b>群智通智能体</b><small>QUNZHITONG AIOS · V1.0 · 私有化部署</small></div></div>
+    <div class="login-head"><h1>选择你的身份进入</h1><p>平台按岗位分配智能体和功能。演示环境里可以随时切换身份，查看不同岗位看到的工作台。正式环境由企业微信 SSO 登录后自动识别角色。</p></div>
+    <div class="role-groups">${groups.map(g=>`<div><div class="rg-title">${g}</div><div class="role-grid">${ROLES.filter(r=>r.group===g).map(r=>{
+      const n = AGENTS.filter(a=>r.id==='admin'||a.roles.includes('*')||a.roles.includes(r.id)).length;
+      return `<button class="role-card" type="button" data-role="${r.id}">
+        <div class="rc-top"><div class="av" style="background:${r.color}">${r.name[0]}</div><div><b>${r.name}</b><div class="dept">${r.dept}</div></div></div>
+        <p>${r.desc}</p>
+        <div class="rc-foot"><span>演示账号：${r.user}</span><span class="num">${n} 个智能体</span></div></button>`}).join('')}</div></div>`).join('')}</div>
+    <div class="login-note">所有数据均为演示数据，不连接真实业务系统。</div></div>`;
+  L.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>enter(b.dataset.role));
+}
+function enter(r){S.role=r;S.page='home';S.chatAgent=null;try{localStorage.setItem('qzt-role',r)}catch(e){};renderApp();}
+function logout(){S.role=null;try{localStorage.removeItem('qzt-role')}catch(e){};renderLogin();}
+
+/* ================= 主框架 ================= */
+function renderApp(){
+  $('#login').hidden=true; $('#app').hidden=false;
+  const r=role();
+  $('#nav').innerHTML = `<div class="brand"><div class="logo">群智</div><div><b>群智通智能体</b><small>QUNZHITONG AIOS · V1.0</small></div></div>
+    <div class="nav-scroll">${navFor(S.role).map(([sec,items])=>`<div class="nav-sec">${sec}</div>${items.map(it=>{
+      const c = it.count ? pendingCount() : 0;
+      return `<button class="nav-item ${S.page===it.id?'on':''}" type="button" data-page="${it.id}">${ico(it.i)}<span>${it.n}</span>${it.tag?`<span class="tag">${it.tag}</span>`:''}${c?`<span class="tag n">${c}</span>`:''}</button>`}).join('')}`).join('')}</div>
+    <div class="me"><div class="av" style="background:${r.color}">${r.user[0]}</div><div><b>${r.user}</b><span>${r.name}</span></div><button type="button" id="switchRole">切换身份</button></div>`;
+  $('#nav').querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page));
+  $('#switchRole').onclick=logout;
+  renderPage();
+}
+function go(p,extra){S.page=p;Object.assign(S,extra||{});$('#nav').classList.remove('open');renderApp();$('#main').scrollTop=0;window.scrollTo(0,0)}
+$('#menuBtn').onclick=()=>$('#nav').classList.toggle('open');
+
+function renderPage(){
+  const P = {home:pHome,chat:pChat,agents:pAgents,orderin:pOrder,route:pRoute,approve:pApprove,kb:pKB,usage:pUsage,coop:pCoop,users:pUsers,plugins:pPlugins,connectors:pConnectors,models:pModels,audit:pAudit}[S.page]||pHome;
+  $('#main').innerHTML = `<div class="page">${P()}</div>`;
+  bind();
+}
+const ph = (t,d,right='')=>`<div class="ph"><div class="grow"><h1>${t}</h1>${d?`<p>${d}</p>`:''}</div>${right}</div>`;
+const stPill = a=>a.st==='run'?'<span class="pill p-ok">运行中</span>':a.st==='pilot'?'<span class="pill p-warn">试点中</span>':'<span class="pill p-mute">二期规划</span>';
+const kpis = arr=>`<div class="grid4" style="margin-bottom:16px">${arr.map(k=>`<div class="panel kpi"><div class="l">${k[0]}</div><div class="v num">${k[1]}<small>${k[2]}</small></div><div class="d ${k[4]||''}" style="${k[4]?'':'color:var(--muted)'}">${k[3]||'&nbsp;'}</div></div>`).join('')}</div>`;
+
+/* ---------- 工作台 ---------- */
+function pHome(){
+  const r=role(), h=HOME[S.role];
+  const dotc={bad:'var(--bad)',warn:'var(--warn)',acc:'var(--accent)',mute:'var(--faint)'};
+  const quick = myAgents().filter(a=>a.st!=='plan' && !a.roles.includes('*')).slice(0,5);
+  const hour = new Date().getHours(); const greet = hour<11?'早上好':hour<14?'中午好':hour<18?'下午好':'晚上好';
+  return `<div class="panel hello"><div class="av" style="width:46px;height:46px;border-radius:12px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:18px;background:${r.color}">${r.user[0]}</div>
+      <div style="flex:1;min-width:0"><h2>${r.user}，${greet}</h2><p>${r.dept} · 你可以使用 ${myAgents().length} 个智能体${pendingCount()?`，有 ${pendingCount()} 项待审批`:''}</p></div>
+      <button class="btn pri" type="button" data-go="chat">${ico('chat')}开始对话</button></div>
+    ${kpis(h.kpi)}
+    <div class="grid2">
+      <div class="panel"><div class="panel-h"><h3>今日待办</h3><span class="pill p-acc">${h.todo.length}</span></div>
+        ${h.todo.map(t=>`<div class="todo"><span class="dot" style="background:${dotc[t[0]]}"></span><div class="t">${t[1]}<small>${t[2]||'&nbsp;'}</small></div></div>`).join('')}</div>
+      <div class="panel"><div class="panel-h"><h3>我的常用智能体</h3><button class="btn sm r" type="button" data-go="agents">全部</button></div>
+        ${quick.map(a=>`<div class="quick"><div class="c-ic" style="background:${a.c}">${a.ch}</div><div class="t"><b>${a.name}</b><small>${a.desc}</small></div>${a.page?`<button class="btn sm" type="button" data-go="${a.page}">打开</button>`:`<button class="btn sm" type="button" data-chat="${a.id}">对话</button>`}</div>`).join('')||'<div class="empty">暂无</div>'}</div>
+    </div>
+    <div class="panel" style="margin-top:16px"><div class="panel-h"><h3>一条请求是怎么跑的</h3></div><div class="panel-b"><div class="flow"><span>${r.name}前台</span>→<span>治理层：身份 · 空间 · 权限</span>→<span>Dify 工作流 / Agent</span>→<span>知识库 · 插件（求解器 / OCR / 科大组件）</span>→<span>Bridge 网关 → OWTB · TMS · WMS</span>→<span>写入需审批 · 全程 Trace</span></div></div></div>`;
+}
+
+/* ---------- 智能体（卡片，参考截图） ---------- */
+function pAgents(){
+  let list = myAgents();
+  if(S.agentTab==='pilot') list=list.filter(a=>a.st==='pilot');
+  if(S.agentTab==='plan') list=list.filter(a=>a.st==='plan');
+  if(S.agentTab==='mine') list=list.filter(a=>a.st!=='plan');
+  if(S.q) list=list.filter(a=>(a.name+a.desc).includes(S.q));
+  const tabs=[['mine','我的智能体'],['pilot','试点'],['plan','规划中'],['all','全部']];
+  return ph('智能体', isAdmin()?'管理平台上所有智能体，启停后对相应角色立即生效。':`以下是「${role().name}」岗位可用的智能体。`,
+      isAdmin()?`<button class="btn pri" type="button" data-toast="已打开 Dify 编排画布（演示）">＋ 新建智能体</button><button class="btn" type="button" data-toast="已从模板库创建（演示）">从模板新建</button>`:'')+
+    `<div class="tabs">${tabs.map(t=>`<button type="button" class="${S.agentTab===t[0]?'on':''}" data-tab="${t[0]}">${t[1]}</button>`).join('')}</div>
+    <div class="toolbar"><span class="count">共 <b class="num">${list.length}</b> 个智能体</span>
+      <label class="search">${ico('search')}<input id="agentQ" placeholder="搜索智能体…" value="${esc(S.q)}"></label></div>
+    <div class="cards">${list.map(card).join('')||'<div class="empty">没有匹配的智能体</div>'}</div>`;
+}
+function card(a){
+  const on = S.enabled[a.id];
+  const roleNames = a.roles.includes('*')?'全员':a.roles.map(x=>ROLES.find(r=>r.id===x).name).join('、');
+  return `<div class="card ${on?'':'off'}"><div class="card-b">
+    <div class="c-top"><div class="c-ic" style="background:${a.c}">${a.ch}</div>
+      <div class="c-name"><b>${a.name}</b><span class="mono">v${a.v}</span>
+        <div class="c-tags">${on?stPill(a):'<span class="pill p-mute">已停用</span>'}${a.def?'<span class="pill p-warn">默认</span>':''}${a.batch?`<span class="pill p-vio">${a.batch}</span>`:''}<span class="pill p-acc">${a.lv}</span></div></div>
+      ${isAdmin()?`<button class="switch ${on?'on':''}" type="button" aria-label="启停" data-sw="${a.id}"></button>`:''}</div>
+    <p class="c-desc">${a.desc}</p>
+    <div class="c-meta"><div class="chips">${a.tools.map(t=>`<span class="chip">${t}</span>`).join('')}</div><span class="num" style="white-space:nowrap">${fmt(a.calls)} 次调用</span></div>
+    ${isAdmin()?`<div style="font-size:12px;color:var(--faint)">开放给：${roleNames}</div>`:''}
+  </div><div class="c-foot">
+    <button class="ic-btn" type="button" title="复制" data-toast="已复制智能体链接">${ico('copy')}</button>
+    ${isAdmin()?`<button class="ic-btn" type="button" title="编辑" data-toast="已在 Dify 中打开编排（演示）">${ico('edit')}</button>`:''}
+    <button class="ic-btn" type="button" title="分享" data-toast="已生成分享链接（钉钉 / 企业微信）">${ico('share')}</button>
+    ${a.page?`<button class="btn sm" type="button" data-go="${a.page}" ${on?'':'disabled'}>打开</button>`:`<button class="btn sm" type="button" data-chat="${a.id}" ${on?'':'disabled'}>对话</button>`}
+  </div></div>`;
+}
+
+/* ---------- 对话 ---------- */
+function pChat(){
+  const list = myAgents().filter(a=>S.enabled[a.id]);
+  if(!S.chatAgent || !list.find(a=>a.id===S.chatAgent)) S.chatAgent = (list.find(a=>a.demo && !a.roles.includes('*'))||list[0]).id;
+  const a = AGENTS.find(x=>x.id===S.chatAgent);
+  const msgs = S.chats[a.id] || [{r:'a',t:`你好，我是「${a.name}」。${a.desc}`}];
+  const live = !!LLM.key;
+  return ph('对话','选择一个智能体开始。回答由 Dify 编排，涉及写操作时会转审批。',
+      `<span class="pill ${live?'p-ok':'p-mute'}">${live?'DeepSeek 已接入 · '+esc(LLM.model):'演示模式（未配置模型）'}</span><button class="btn" type="button" id="llmBtn">${ico('cpu')}模型设置</button>`)+
+    (S.llmOpen?`<div class="panel" style="margin-bottom:16px"><div class="panel-h"><h3>接入 DeepSeek</h3><span class="r" style="font-size:12px;color:var(--muted)">Key 只保存在你这台电脑的浏览器里，不会写进页面</span></div>
+      <form class="panel-b" id="llmForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end">
+        <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)">API Key<input id="llmKey" type="password" autocomplete="off" placeholder="sk-…" value="${esc(LLM.key)}" style="border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface);color:var(--fg)"></label>
+        <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)">接口地址<input id="llmBase" value="${esc(LLM.base)}" style="border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface);color:var(--fg)"></label>
+        <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)">模型<select id="llmModel" style="border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface);color:var(--fg)">${['deepseek-chat','deepseek-reasoner'].map(m=>`<option ${m===LLM.model?'selected':''}>${m}</option>`).join('')}</select></label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" type="submit">保存</button><button class="btn" type="button" id="llmTest">测试连接</button>${live?'<button class="btn danger" type="button" id="llmClear">清除</button>':''}</div>
+        <div id="llmMsg" style="grid-column:1/-1;font-size:12px;color:var(--muted)">接口地址填 DeepSeek 官方地址，或内网部署的 OpenAI 兼容网关（如 OneAPI）。调用失败时自动回落到演示回答。</div>
+      </form></div>`:'')+
+   `<div class="panel chat"><div class="chat-list">${list.map(x=>`<button type="button" class="${x.id===a.id?'on':''}" data-pick="${x.id}"><div class="c-ic" style="background:${x.c}">${x.ch}</div><div style="min-width:0"><b>${x.name}</b><small>${x.kind} · ${x.lv}</small></div></button>`).join('')}</div>
+    <div class="chat-main"><div class="msgs" id="msgs">${msgs.map(m=>`<div class="msg ${m.r}">${esc(m.t)}${m.src?`<span class="src">${esc(m.src)}</span>`:''}</div>`).join('')}</div>
+      ${a.demo?`<div class="suggest">${a.demo.map((d,i)=>`<button type="button" data-ask="${i}">${esc(d[0])}</button>`).join('')}</div>`:''}
+      <form class="composer" id="composer"><input id="chatIn" placeholder="向「${esc(a.name)}」提问…" autocomplete="off"><button class="btn pri" type="submit">发送</button></form></div></div>`;
+}
+/* ---------- DeepSeek 接入（OpenAI 兼容接口） ---------- */
+const LLM = {key:'', base:'https://api.deepseek.com', model:'deepseek-chat'};
+try{ const j = JSON.parse(localStorage.getItem('qzt-llm')||'null'); if(j) Object.assign(LLM,j); }catch(e){}
+function saveLLM(){ try{ localStorage.setItem('qzt-llm', JSON.stringify(LLM)); }catch(e){} }
+const LV = {L1:'只读分析，只给信息和建议',L2:'给出可选方案，由人选择后执行',L3:'可准备写入业务系统的操作，但必须经人工审批后才执行'};
+function systemPrompt(a){
+  const r = role();
+  const who = a.roles.includes('*') ? '公司全体员工' : a.roles.map(x=>ROLES.find(y=>y.id===x).name).join('、');
+  return [
+    `你是「群智通」内部智能体平台上的「${a.name}」。群智通是一家汽车零部件第三方物流企业，主营主机厂 VMI 仓储、短驳与干线运输、JIT 配送，正在从 3PL 向 4PL 转型。`,
+    `你的职责：${a.desc}`,
+    `主要服务岗位：${who}。当前提问者是 ${r.dept} 的${r.name}「${r.user}」。`,
+    `你在正式环境中可调用：${a.tools.join('、')}。但现在是演示环境，没有接入真实业务系统和知识库。需要具体数据时，可以给出合理的示例数值，并明确标注“示例数据”，不要假装查询过真实系统。`,
+    `自主等级 ${a.lv}：${LV[a.lv]}。凡涉及新建或修改订单、派车、提交账单等写入操作，只给建议并提示需在审批中心人工确认。`,
+    `载重、时窗、计费金额这类必须精确的结果，说明正式环境由求解器或计费规则引擎计算，你只做解释和建议。`,
+    `用简体中文回答，先给结论再给依据，条理清楚，通常不超过 300 字。`
+  ].join('\n');
+}
+async function callLLM(a, history){
+  const url = LLM.base.replace(/\/+$/,'') + '/chat/completions';
+  const ctl = new AbortController(); const tm = setTimeout(()=>ctl.abort(), 60000);
+  try{
+    const res = await fetch(url, {method:'POST', signal:ctl.signal, headers:{'Content-Type':'application/json','Authorization':'Bearer '+LLM.key},
+      body: JSON.stringify({model:LLM.model, temperature:0.4, messages:[{role:'system',content:systemPrompt(a)}, ...history]})});
+    if(!res.ok){ let t=''; try{ t=(await res.json()).error?.message||''; }catch(e){} throw new Error('HTTP '+res.status+(t?' · '+t:'')); }
+    const j = await res.json();
+    return {text:(j.choices?.[0]?.message?.content||'').trim(), usage:j.usage};
+  } finally { clearTimeout(tm); }
+}
+function mockReply(a, text, demoIdx){
+  const d = demoIdx!=null ? a.demo[demoIdx] : (a.demo||[]).find(x=>x[0]===text);
+  return d ? {r:'a',t:d[1],src:d[2]} : {r:'a',t:`（演示）已收到。正式环境中，「${a.name}」会调用 ${a.tools.join('、')} 处理这个问题，结果附带出处和 Trace 编号。`,src:'trace-'+Math.random().toString(16).slice(2,8)};
+}
+function scrollMsgs(){ const m=$('#msgs'); if(m) m.scrollTop=m.scrollHeight; }
+async function sendChat(text, demoIdx){
+  const a = AGENTS.find(x=>x.id===S.chatAgent);
+  const arr = S.chats[a.id] || (S.chats[a.id]=[{r:'a',t:`你好，我是「${a.name}」。${a.desc}`}]);
+  arr.push({r:'u',t:text});
+  if(!LLM.key){ arr.push(mockReply(a,text,demoIdx)); renderPage(); scrollMsgs(); return; }
+  const history = arr.slice(1).filter(m=>!m.err).slice(-12).map(m=>({role:m.r==='u'?'user':'assistant', content:m.t}));
+  const slot = {r:'a', t:'思考中…', pending:true}; arr.push(slot); renderPage(); scrollMsgs();
+  try{
+    const out = await callLLM(a, history);
+    slot.t = out.text || '（模型没有返回内容）';
+    slot.src = `DeepSeek · ${LLM.model}${out.usage?` · ${out.usage.total_tokens} tokens`:''}`;
+  }catch(e){
+    const m = mockReply(a,text,demoIdx);
+    slot.t = m.t; slot.err = true;
+    slot.src = `DeepSeek 调用失败（${e.name==='AbortError'?'超时':e.message||'网络被拦截'}），已显示演示回答`;
+  }
+  delete slot.pending;
+  if(S.page==='chat' && S.chatAgent===a.id){ renderPage(); scrollMsgs(); }
+}
+
+/* ---------- 订单自动入库（试点一） ---------- */
+function pOrder(){
+  const o = ORDERS.find(x=>x.id===S.order);
+  const done = S.ordersDone[o.id];
+  const missing = o.f.filter(f=>!f[1]);
+  const canWrite = ['order','admin'].includes(S.role);
+  const step = done?4:missing.length?2:3;
+  const stepNames=['渠道监听','识别抽取','校验与缺项拦截','人工复核','写入 OWTB（防重）'];
+  return ph('订单自动入库','邮件、微信、照片自动识别为结构化订单。缺项先拦截，复核后经 Bridge 写入 OWTB。',`<span class="pill p-warn">试点一 · L3 复核后写入</span>`)+
+   kpis([['今日识别','46','单','邮件 21 · 微信 17 · 照片 8'],['字段正确率','97.8','%','对比签认真值表','up'],['缺项拦截','4','单','今日'],['重复写入','0','次','idempotency_key','up']])+
+   `<div class="split"><div class="panel"><div class="panel-h"><h3>入库队列</h3><span class="pill p-acc r">${ORDERS.filter(x=>!S.ordersDone[x.id]).length} 待处理</span></div>
+     ${ORDERS.map(x=>{const d=S.ordersDone[x.id];const st=d?'<span class="pill p-ok">已写入</span>':x.st==='缺项'?'<span class="pill p-bad">缺项</span>':'<span class="pill p-warn">待复核</span>';
+       return `<button type="button" class="q-item ${x.id===o.id?'on':''}" data-ord="${x.id}"><div class="ch" style="background:${x.chc}">${x.ch}</div><div class="t"><b>${x.title}</b><small>${esc(x.from)} · ${x.t}</small></div>${st}</button>`}).join('')}
+     <div class="panel-b" style="font-size:12px;color:var(--muted)">一期消息适配器使用模拟投递。</div></div>
+    <div class="panel"><div class="panel-h"><h3>${o.title}</h3><span class="mono r" style="color:var(--muted)">trace-${o.id}-20261121</span></div><div class="panel-b">
+      <div class="steps">${stepNames.map((n,i)=>`<div class="${i<step?'done':i===step?'cur':''}">${n}</div>`).join('')}</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px">原始内容</div><div class="raw">${esc(o.raw)}</div>
+      <div style="font-size:12px;color:var(--muted);margin:14px 0 6px">识别结果</div>
+      <div class="tbl-wrap"><table><tr><th>字段</th><th>识别值</th><th>置信度</th></tr>
+        ${o.f.map(f=>`<tr class="${f[1]?'':'miss'}"><td>${f[0]}</td><td>${f[1]?esc(f[1]):'<b style="color:var(--bad)">缺失，需向客户确认</b>'}</td><td class="num">${f[2]?`<span class="conf"><i style="width:${f[2]}%;${f[2]<80?'background:var(--warn)':''}"></i></span>${f[2]}%`:'—'}</td></tr>`).join('')}</table></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center">
+        ${done?`<span class="pill p-ok">已写入 OWTB · ${done}</span>`:missing.length?`<button class="btn pri" type="button" data-toast="已通过微信回复客户补充到达时间">请客户补充</button><span style="font-size:12px;color:var(--muted)">缺项订单不会写入业务系统</span>`:
+          canWrite?`<button class="btn pri" type="button" data-write="${o.id}">确认并写入 OWTB</button><button class="btn" type="button" data-toast="已退回订单专员修改">退回修改</button>`:`<span style="font-size:12px;color:var(--muted)">你的身份可以查看，写入需订单专员复核。</span>`}
+      </div></div></div></div>`;
+}
+
+/* ---------- 短驳路线优化（试点二） ---------- */
+function routeSvg(plan){
+  const pts={W:[60,150,'昆山2号仓'],A:[300,60,'安亭总装'],B:[350,170,'嘉定零部件园'],C:[220,240,'青浦配套厂'],D:[440,110,'江桥分拨'],E:[180,90,'花桥工厂']};
+  const sets={A:[['W','E','A','D'],['W','B'],['W','C']],B:[['W','E','A'],['W','D'],['W','B'],['W','C']],C:[['W','E','A'],['W','B','D'],['W','C']]}[plan||'C'];
+  const cols=['var(--accent)','var(--ok)','var(--warn)','var(--vio)'];
+  return `<svg viewBox="0 0 520 290" role="img" aria-label="路线示意">
+    <rect x="0" y="0" width="520" height="290" fill="var(--surface2)" rx="8"/>
+    ${sets.map((s,i)=>`<polyline points="${s.map(k=>pts[k].slice(0,2).join(',')).join(' ')}" fill="none" stroke="${cols[i]}" stroke-width="3" stroke-linejoin="round" stroke-dasharray="${i%2?'6 4':''}"/>`).join('')}
+    ${Object.entries(pts).map(([k,p])=>`<circle cx="${p[0]}" cy="${p[1]}" r="${k==='W'?9:6}" fill="${k==='W'?'var(--fg)':'var(--surface)'}" stroke="var(--fg)" stroke-width="2"/><text x="${p[0]+12}" y="${p[1]+4}" font-size="12" fill="var(--muted)">${p[2]}</text>`).join('')}
+  </svg>`;
+}
+function pRoute(){
+  const canSubmit = ['dispatch','admin'].includes(S.role);
+  const sel = PLANS.find(p=>p.id===S.plan);
+  return ph('短驳路线优化','求解器在载重、时窗、道路限制下给出候选方案，大模型解释差异。调度员选案后提交派车审批。',`<span class="pill p-warn">试点二 · L2 选案后派车</span>`)+
+   `<div class="panel" style="margin-bottom:16px"><div class="panel-h"><h3>今日输入 · 2026-11-21</h3><span class="mono r" style="color:var(--muted)">snapshot_id: snap-1121-0830</span></div>
+     <div class="panel-b"><div class="grid4">
+       <div><div style="font-size:12px;color:var(--muted)">短驳订单</div><b class="num" style="font-size:18px">18 单</b></div>
+       <div><div style="font-size:12px;color:var(--muted)">可用车辆</div><b style="font-size:18px">6 台</b> <span style="font-size:12px;color:var(--muted)">4.2m×2 · 6.8m×2 · 9.6m×2</span></div>
+       <div><div style="font-size:12px;color:var(--muted)">时窗约束</div><b style="font-size:18px">11 个</b> <span style="font-size:12px;color:var(--muted)">最早 07:30</span></div>
+       <div><div style="font-size:12px;color:var(--muted)">道路限制</div><b style="font-size:18px">3 条</b> <span style="font-size:12px;color:var(--muted)">限高 · 限行</span></div></div>
+       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn pri" type="button" id="runSolve">${S.planRun?'重新求解':'生成候选方案'}</button><span style="font-size:12px;color:var(--muted);align-self:center">OR-Tools 求解器插件 · WMS 已核验可提货时间</span></div></div></div>`+
+   (S.planRun?`<div class="plans">${PLANS.map(p=>`<button type="button" class="plan ${S.plan===p.id?'sel':''}" data-plan="${p.id}">
+      <h4>方案 ${p.id} · ${p.name} ${p.rec?'<span class="pill p-vio">推荐</span>':''}</h4>
+      <dl><div><dt>预计费用</dt><dd class="num">¥${fmt(p.cost)}</dd></div><div><dt>总里程</dt><dd class="num">${p.km} km</dd></div>
+          <div><dt>车辆数</dt><dd class="num">${p.veh} 台</dd></div><div><dt>预计准时率</dt><dd class="num">${p.ontime}%</dd></div></dl>
+      <div class="cons"><span class="ok">✓ 载重、时窗、限高 100% 满足</span><span>平均满载率 ${p.util}%</span>${p.id==='A'?'<span class="no">! 订单 SO-0091 时窗余量仅 5 分钟</span>':''}</div>
+      <div style="font-size:13px;color:var(--muted)">${p.note}</div></button>`).join('')}</div>
+     <div class="grid2" style="margin-top:16px"><div class="panel routes"><div class="panel-h"><h3>路线示意 · 方案 ${S.plan||'C'}</h3></div><div class="panel-b">${routeSvg(S.plan)}</div></div>
+      <div class="panel"><div class="panel-h"><h3>不可行与注意事项</h3></div><div class="panel-b" style="display:flex;flex-direction:column;gap:10px;font-size:13px">
+        <div><span class="pill p-bad">不可行</span> SO-0107 要求 9.6 米车进入青浦配套厂，该路段限长 7 米。已改派 6.8 米车。</div>
+        <div><span class="pill p-warn">提示</span> 嘉定零部件园 14:00 前装卸口占满，方案 B、C 已避开。</div>
+        <div style="margin-top:6px">${canSubmit?`<button class="btn pri" type="button" id="submitPlan" ${sel?'':'disabled'}>${sel?`提交方案 ${sel.id} 派车审批`:'先选择一个方案'}</button>`:'<span style="color:var(--muted);font-size:12px">派车需运输调度提交，你的身份只读。</span>'}</div></div></div></div>`
+     :`<div class="panel empty">点击「生成候选方案」，求解器约 12 秒给出 3 个可比较的方案。</div>`);
+}
+
+/* ---------- 审批中心 ---------- */
+function pApprove(){
+  const list=myApprovals();
+  return ph('审批中心','智能体发起的所有写操作都在这里人工确认，经 Bridge 防重执行并留痕。')+
+   `<div class="panel"><div class="tbl-wrap"><table><tr><th>编号</th><th>操作</th><th>发起智能体</th><th>内容</th><th>防重键</th><th>状态</th><th></th></tr>
+    ${list.map(a=>{const s=S.approvals[a.id];return `<tr><td class="mono">${a.id}</td><td><b>${a.type}</b><div style="font-size:12px;color:var(--muted)">提交人 ${a.by}</div></td><td>${a.agent}</td><td style="min-width:220px">${a.body}</td><td class="mono" style="color:var(--muted)">${a.key}</td>
+      <td>${s==='ok'?'<span class="pill p-ok">已通过</span>':s==='no'?'<span class="pill p-bad">已驳回</span>':'<span class="pill p-warn">待审批</span>'}</td>
+      <td style="white-space:nowrap">${s?'':`<button class="btn sm pri" type="button" data-ap="${a.id}" data-v="ok">通过</button> <button class="btn sm danger" type="button" data-ap="${a.id}" data-v="no">驳回</button>`}</td></tr>`}).join('')}</table></div></div>`;
+}
+
+/* ---------- 知识库 ---------- */
+function pKB(){
+  const list = KB.filter(k=>isAdmin()||k.roles.includes('*')||k.roles.includes(S.role));
+  return ph('知识库',isAdmin()?'全部知识库及其开放范围。':'你的岗位可以检索的知识库。所有文档留在内网，不出域。',isAdmin()?'<button class="btn pri" type="button" data-toast="已打开上传窗口（演示）">＋ 新建知识库</button>':'')+
+   `<div class="panel"><div class="tbl-wrap"><table><tr><th>知识库</th><th>文档数</th><th>最近更新</th><th>开放范围</th><th></th></tr>
+    ${list.map(k=>`<tr><td><b>${k.n}</b></td><td class="num">${k.docs}</td><td class="num">${k.upd}</td><td>${k.roles.includes('*')?'全员':k.roles.map(x=>ROLES.find(r=>r.id===x).name).join('、')}</td><td><button class="btn sm" type="button" data-toast="已打开「${k.n}」检索（演示）">检索</button></td></tr>`).join('')}</table></div></div>`;
+}
+
+/* ---------- 用量与效果 ---------- */
+function pUsage(){
+  const top=[...AGENTS].filter(a=>a.calls).sort((a,b)=>b.calls-a.calls).slice(0,8); const max=top[0].calls;
+  return ph('用量与效果','对照一期验收指标查看平台运行情况。')+
+   kpis([['知识问答采纳率','96.2','%','目标 ≥95%','up'],['P95 响应','2.1','秒','目标 ≤3s','up'],['写操作审批留痕','100','%','目标 100%','up'],['数据出域 / 高危越权','0','次','目标 0','up']])+
+   `<div class="grid2"><div class="panel"><div class="panel-h"><h3>调用量 TOP 8（近 30 天）</h3></div><div class="panel-b"><div class="bars">${top.map(a=>`<div class="bar"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.name}</span><div class="tr"><i style="width:${a.calls/max*100}%"></i></div><span class="n num">${fmt(a.calls)}</span></div>`).join('')}</div></div></div>
+    <div class="panel"><div class="panel-h"><h3>试点影子运行对比</h3></div><div class="tbl-wrap"><table><tr><th>指标</th><th>人工</th><th>智能体</th></tr>
+      <tr><td>订单录入耗时 / 单</td><td class="num">6.5 分钟</td><td class="num"><b>0.8 分钟</b></td></tr>
+      <tr><td>字段正确率</td><td class="num">98.9%</td><td class="num"><b>97.8%</b></td></tr>
+      <tr><td>短驳日均成本</td><td class="num">¥9,690</td><td class="num"><b>¥8,970</b></td></tr>
+      <tr><td>短驳准时率</td><td class="num">93.4%</td><td class="num"><b>96.1%</b></td></tr></table></div></div></div>`;
+}
+
+/* ---------- 每日协同（二期） ---------- */
+function pCoop(){
+  return ph('每日协同','每天 9 点冻结同一数据快照，并行调用预测、库存、定价组件，汇聚后标出冲突和待审批项。',`<span class="pill p-mute">二期规划 · 预览</span>`)+
+   `<div class="panel" style="margin-bottom:16px"><div class="panel-b"><div class="flow"><span>09:00 Dify 定时触发</span>→<span>冻结 snapshot_id</span>→<span>科大预测组件</span><span>科大库存组件</span><span>科大定价组件</span>→<span>约束核对与汇聚</span>→<span>冲突 + 待审批项推送管理层</span></div></div></div>
+   <div class="panel"><div class="panel-h"><h3>示例输出（模拟）</h3></div><div class="tbl-wrap"><table><tr><th>议题</th><th>预测</th><th>库存</th><th>定价</th><th>建议</th></tr>
+    <tr><td>安亭总装下周需求 +18%</td><td>需求上调</td><td>A-2231 缺口 290</td><td>加急费 +6%</td><td><span class="pill p-warn">待审批</span> 加急补货，接受加急费</td></tr>
+    <tr><td>嘉定线路空驶率 31%</td><td>平稳</td><td>—</td><td>可降价 4% 争取回程货</td><td><span class="pill p-acc">建议</span> 销售跟进回程货源</td></tr></table></div>
+    <div class="panel-b" style="font-size:12px;color:var(--muted)">数据超时或不齐时暂停自动决策并转人工；实际履约结果回传用于回放和调规则。</div></div>`;
+}
+
+/* ---------- 管理员页面 ---------- */
+function pUsers(){
+  return ph('用户与角色','角色决定每个人能看到的智能体、知识库和可发起的写操作。正式环境通过企业微信 SSO 同步组织架构。',`<button class="btn pri" type="button" data-toast="已打开新建角色（演示）">＋ 新建角色</button>`)+
+   `<div class="panel"><div class="tbl-wrap"><table><tr><th>角色</th><th>部门</th><th>人数</th><th>可用智能体</th><th>可发起写操作</th><th>数据范围</th></tr>
+   ${ROLES.map((r,i)=>{const n=AGENTS.filter(a=>r.id==='admin'||a.roles.includes('*')||a.roles.includes(r.id)).length;const w=APPROVALS.filter(a=>a.roles.includes(r.id)&&r.id!=='mgmt').map(a=>a.type).join('、')||'—';
+     return `<tr><td><b>${r.name}</b></td><td>${r.dept}</td><td class="num">${[38,12,24,31,18,9,6,3][i]}</td><td class="num">${n}</td><td style="font-size:12px">${r.id==='mgmt'?'仅审批':r.id==='admin'?'全部（审计）':w}</td><td style="font-size:12px;color:var(--muted)">${['本人客户','本部门项目','本组订单','本调度区','本仓','全部账单','全公司','全公司'][i]}</td></tr>`}).join('')}</table></div></div>`;
+}
+const stP = s=>({run:'<span class="pill p-ok">运行中</span>',pilot:'<span class="pill p-warn">试点</span>',plan:'<span class="pill p-mute">二期</span>',warn:'<span class="pill p-bad">待确认</span>'}[s]);
+function pPlugins(){
+  return ph('插件','求解器、OCR 和科大组件都以 Dify 插件工具接入，不改 Dify 内核。全部为非 GPL 协议。',`<button class="btn pri" type="button" data-toast="已打开插件市场（内网镜像）">＋ 安装插件</button>`)+
+   `<div class="panel"><div class="tbl-wrap"><table><tr><th>插件</th><th>类别</th><th>协议</th><th>版本</th><th>状态</th><th>被哪些智能体使用</th></tr>
+   ${PLUGINS.map(p=>`<tr><td><b>${p[0]}</b></td><td>${p[1]}</td><td>${p[2]}</td><td class="mono">${p[3]}</td><td>${stP(p[4])}</td><td style="font-size:12px;color:var(--muted)">${p[5]}</td></tr>`).join('')}</table></div></div>`;
+}
+function pConnectors(){
+  return ph('Bridge 连接器','智能体只能经 Bridge 访问业务系统。控制顺序：身份与数据范围 → 参数校验 → 写入审批 → 防重执行 → 审计留痕。')+
+   `<div class="panel"><div class="tbl-wrap"><table><tr><th>系统</th><th>权限</th><th>状态</th><th>近 30 天调用</th></tr>
+   ${CONNECTORS.map(c=>`<tr><td><b>${c[0]}</b></td><td>${c[1]}</td><td>${stP(c[2])}</td><td class="num">${c[3]}</td></tr>`).join('')}</table></div></div>`;
+}
+function pModels(){
+  return ph('模型网关','所有模型私有化部署，经 OneAPI 统一网关调用。一期 Ollama 打样，并发上来后切换 vLLM，智能体侧无感知。')+
+   `<div class="panel"><div class="tbl-wrap"><table><tr><th>用途</th><th>模型</th><th>用在哪里</th><th>当前负载</th></tr>
+   ${MODELS.map(m=>`<tr><td><b>${m[0]}</b></td><td>${m[1]}</td><td>${m[2]}</td><td style="min-width:140px"><div class="bar" style="grid-template-columns:minmax(0,1fr) 40px"><div class="tr"><i style="width:${m[3]}"></i></div><span class="n num">${m[3]}</span></div></td></tr>`).join('')}</table></div></div>`;
+}
+function pAudit(){
+  return ph('审计与 Trace','每次调用都带 trace_id，可回放整条链路。越权访问会被拦截并记录。')+
+   `<div class="panel"><div class="tbl-wrap"><table><tr><th>时间</th><th>操作人</th><th>智能体</th><th>步骤</th><th>结果</th><th>耗时</th></tr>
+   ${TRACES.map(t=>`<tr><td class="mono">${t[0]}</td><td>${t[1]}</td><td>${t[2]}</td><td>${t[3]}</td><td>${t[4]==='成功'?'<span class="pill p-ok">成功</span>':t[4]==='已拦截'?'<span class="pill p-warn">已拦截</span>':'<span class="pill p-bad">已拒绝</span>'}</td><td class="num">${t[5]}</td></tr>`).join('')}</table></div></div>`;
+}
+
+/* ================= 事件绑定 ================= */
+function bind(){
+  const M=$('#main');
+  M.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+  M.querySelectorAll('[data-chat]').forEach(b=>b.onclick=()=>go('chat',{chatAgent:b.dataset.chat}));
+  M.querySelectorAll('[data-toast]').forEach(b=>b.onclick=()=>toast(b.dataset.toast));
+  M.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{S.agentTab=b.dataset.tab;renderPage()});
+  const q=$('#agentQ'); if(q){q.oninput=()=>{S.q=q.value;renderPage();const n=$('#agentQ');n.focus();n.setSelectionRange(n.value.length,n.value.length)}}
+  M.querySelectorAll('[data-sw]').forEach(b=>b.onclick=()=>{const id=b.dataset.sw;const a=AGENTS.find(x=>x.id===id);
+    if(a.st==='plan'&&!S.enabled[id]){toast('该智能体在二期规划中，尚未上线');return}
+    S.enabled[id]=!S.enabled[id];toast(`${a.name} 已${S.enabled[id]?'启用':'停用'}`);renderPage()});
+  M.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{S.chatAgent=b.dataset.pick;renderPage()});
+  M.querySelectorAll('[data-ask]').forEach(b=>b.onclick=()=>{const a=AGENTS.find(x=>x.id===S.chatAgent);sendChat(a.demo[+b.dataset.ask][0],+b.dataset.ask)});
+  const lb=$('#llmBtn'); if(lb) lb.onclick=()=>{S.llmOpen=!S.llmOpen;renderPage()};
+  const lf=$('#llmForm'); if(lf){
+    const read=()=>{LLM.key=$('#llmKey').value.trim();LLM.base=$('#llmBase').value.trim()||'https://api.deepseek.com';LLM.model=$('#llmModel').value;};
+    lf.onsubmit=e=>{e.preventDefault();read();saveLLM();S.llmOpen=false;toast(LLM.key?'已保存，对话将调用 DeepSeek':'已切回演示模式');renderPage()};
+    $('#llmTest').onclick=async()=>{read();const msg=$('#llmMsg');if(!LLM.key){msg.textContent='请先填写 API Key';return}
+      msg.textContent='正在测试…';
+      try{const o=await callLLM(AGENTS[0],[{role:'user',content:'用一句话回复：连接成功'}]);msg.innerHTML='<span style="color:var(--ok)">连接成功：</span>'+esc(o.text)}
+      catch(e){msg.innerHTML='<span style="color:var(--bad)">连接失败：</span>'+esc(e.message||String(e))+'。如果是网络错误，通常是当前页面环境禁止访问外部接口，请用本地打开的版本或内网网关。'}};
+    const lc=$('#llmClear'); if(lc) lc.onclick=()=>{LLM.key='';saveLLM();S.llmOpen=false;toast('已清除 Key，切回演示模式');renderPage()};
+  }
+  const f=$('#composer'); if(f){f.onsubmit=e=>{e.preventDefault();const v=$('#chatIn').value.trim();if(v)sendChat(v)}; const m=$('#msgs'); if(m) m.scrollTop=m.scrollHeight;}
+  M.querySelectorAll('[data-ord]').forEach(b=>b.onclick=()=>{S.order=b.dataset.ord;renderPage()});
+  M.querySelectorAll('[data-write]').forEach(b=>b.onclick=()=>{const no='SO-20261121-0'+(110+Object.keys(S.ordersDone).length);S.ordersDone[b.dataset.write]=no;toast(`已写入 OWTB：${no}（防重键已登记）`);renderApp()});
+  const rs=$('#runSolve'); if(rs) rs.onclick=()=>{rs.disabled=true;rs.textContent='求解中…';setTimeout(()=>{S.planRun=true;S.plan='C';renderPage();toast('已生成 3 个候选方案，耗时 12.4 秒')},700)};
+  M.querySelectorAll('[data-plan]').forEach(b=>b.onclick=()=>{S.plan=b.dataset.plan;renderPage()});
+  const sp=$('#submitPlan'); if(sp) sp.onclick=()=>{S.approvals['AP-1094']=undefined;toast(`方案 ${S.plan} 已提交派车审批（AP-1094）`);};
+  M.querySelectorAll('[data-ap]').forEach(b=>b.onclick=()=>{S.approvals[b.dataset.ap]=b.dataset.v;toast(b.dataset.v==='ok'?'已通过，Bridge 正在防重执行并留痕':'已驳回，已通知提交人');renderApp()});
+}
+
+/* 启动 */
+S.role ? renderApp() : renderLogin();
+</script>
+
+</body>
+</html>
