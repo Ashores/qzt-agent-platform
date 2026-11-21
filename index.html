@@ -25,6 +25,7 @@
   --ok:#3cc98e; --ok-soft:#173528; --warn:#f0a93a; --warn-soft:#3a2c14; --bad:#f06b6b; --bad-soft:#3d1c1f; --vio:#a08bff; --vio-soft:#2a2350;
   --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{height:100%}
 body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;line-height:1.55}
 button{font:inherit;color:inherit;cursor:pointer}
@@ -235,6 +236,211 @@ tr:last-child td{border-bottom:0}
   .search{margin-left:0;width:100%}.search input{width:100%}
   .bar{grid-template-columns:90px minmax(0,1fr) 56px}
 }
+
+/* ---------- 平台原理（客户讲解） ---------- */
+.ex-tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-bottom:18px}
+.ex-tab{display:flex;align-items:center;gap:10px;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;min-width:0}
+.ex-tab i{font-style:normal;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;background:var(--surface2);color:var(--muted);flex:none}
+.ex-tab span{font-size:13px;line-height:1.3;min-width:0}
+.ex-tab:hover{border-color:var(--accent)}
+.ex-tab.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
+.ex-tab.on i{background:var(--accent);color:var(--accent-fg)}
+.ex-lead{padding:22px 24px;margin-bottom:16px;display:flex;gap:18px;align-items:center;flex-wrap:wrap;background:linear-gradient(120deg,var(--accent-soft),var(--surface) 70%)}
+.ex-lead h2{font-size:22px;font-weight:700}
+.ex-lead p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.ex-lead .big{font-size:40px;line-height:1;flex:none}
+.ex-g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.ex-g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.ex-g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.ex-card{padding:16px;display:flex;flex-direction:column;gap:8px}
+.ex-card .ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-weight:700;color:#fff;font-size:15px}
+.ex-card b{font-size:15px}
+.ex-card p{margin:0;font-size:13px;color:var(--muted)}
+.ex-sec-t{font-size:16px;font-weight:700;margin:22px 0 10px;display:flex;align-items:center;gap:8px}
+.ex-sec-t small{font-weight:400;font-size:12px;color:var(--muted)}
+/* 分层架构 */
+.ex-arch{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:14px;border:2px dashed var(--ok);border-radius:16px;padding:30px 16px 16px;position:relative}
+.ex-arch::before{content:"企业内网 · 私有化部署";position:absolute;top:-11px;left:18px;background:var(--bg);color:var(--ok);font-size:12px;font-weight:600;padding:0 8px}
+.ex-layers{display:flex;flex-direction:column;gap:0}
+.ex-layer{display:grid;grid-template-columns:170px minmax(0,1fr);gap:14px;align-items:center;padding:14px 16px;border-radius:12px;background:var(--surface);border:1px solid var(--line);position:relative}
+.ex-layer + .ex-down{height:22px;display:flex;justify-content:center;align-items:center;color:var(--faint);font-size:12px;gap:6px}
+.ex-layer .nm b{display:block;font-size:15px}
+.ex-layer .nm span{font-size:12px;color:var(--muted)}
+.ex-layer .bd{display:flex;flex-direction:column;gap:6px;min-width:0}
+.ex-layer .bd p{margin:0;font-size:13px;color:var(--muted)}
+.ex-chips{display:flex;gap:6px;flex-wrap:wrap}
+.ex-chip{font-size:12px;padding:2px 9px;border-radius:6px;background:var(--surface2);border:1px solid var(--line);white-space:nowrap}
+.ex-layer.hl{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.ex-layer.gw{border-color:var(--warn)}
+.ex-side{border-radius:12px;background:var(--vio-soft);border:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.ex-side b{color:var(--vio);font-size:15px}
+.ex-side p{margin:0;font-size:13px;color:var(--muted)}
+.bar-l{width:4px;align-self:stretch;border-radius:2px;position:absolute;left:0;top:12px;bottom:12px}
+/* 步骤播放器 */
+.ex-ask{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;margin-bottom:14px}
+.ex-ask .q{background:var(--accent);color:var(--accent-fg);padding:10px 14px;border-radius:12px 12px 12px 4px;font-size:14px}
+.ex-steps{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;margin-bottom:14px;position:relative}
+.ex-step{border:0;background:none;padding:0 4px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;position:relative}
+.ex-step::before{content:"";position:absolute;top:17px;left:-50%;width:100%;height:3px;background:var(--line);z-index:0}
+.ex-step:first-child::before{display:none}
+.ex-step.done::before,.ex-step.cur::before{background:var(--accent)}
+.ex-step i{font-style:normal;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:700;background:var(--surface);border:2px solid var(--line);color:var(--muted);position:relative;z-index:1;transition:all .2s}
+.ex-step.done i{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.ex-step.cur i{background:var(--accent);border-color:var(--accent);color:var(--accent-fg);transform:scale(1.12)}
+.ex-step span{font-size:13px;color:var(--muted)}
+.ex-step.cur span{color:var(--fg);font-weight:600}
+.ex-detail{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0}
+.ex-detail > div{padding:18px 20px}
+.ex-detail > div + div{border-left:1px solid var(--line);background:var(--surface2);border-radius:0 12px 12px 0}
+.ex-detail h3{font-size:18px;margin-bottom:6px}
+.ex-detail p{margin:0 0 10px;color:var(--muted)}
+.ex-who{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.ex-screen{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:13px;display:flex;flex-direction:column;gap:6px}
+.ex-screen .lbl{font-size:11px;color:var(--faint);letter-spacing:.06em}
+.ex-screen .row{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dashed var(--line);padding-bottom:5px}
+.ex-screen .row:last-child{border-bottom:0;padding-bottom:0}
+.ex-screen .row span:first-child{color:var(--muted)}
+.ex-ctrl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-left:auto}
+/* 横向流程 */
+.ex-flow{display:flex;align-items:stretch;gap:0;overflow-x:auto;padding-bottom:4px}
+.ex-node{flex:1;min-width:128px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 12px;display:flex;flex-direction:column;gap:6px;text-align:center;align-items:center}
+.ex-node .ic{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:15px}
+.ex-node b{font-size:14px}
+.ex-node p{margin:0;font-size:12px;color:var(--muted)}
+.ex-node.human{border-color:var(--warn);background:var(--warn-soft)}
+.ex-node.human .ic{background:var(--warn);color:#fff}
+.ex-arrow{flex:none;width:26px;display:grid;place-items:center;color:var(--faint);font-size:18px}
+.ex-who-ai{font-size:11px;padding:0 6px;border-radius:5px;background:var(--accent-soft);color:var(--accent)}
+.ex-who-hu{font-size:11px;padding:0 6px;border-radius:5px;background:var(--warn);color:#fff}
+.ex-legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:10px;flex-wrap:wrap}
+/* 前后对比 */
+.ex-vs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.ex-vs .panel{padding:16px}
+.ex-vs h4{margin:0 0 10px;font-size:14px;display:flex;align-items:center;gap:8px}
+.ex-vs ul{margin:0;padding-left:18px;color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:5px}
+.ex-vs .before{background:var(--surface2)}
+.ex-vs .after{border-color:var(--ok)}
+.ex-metric{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.ex-metric div{display:flex;flex-direction:column}
+.ex-metric b{font-size:22px}
+.ex-metric span{font-size:12px;color:var(--muted)}
+.ex-note{font-size:12px;color:var(--faint);margin-top:8px}
+/* 示例：原文 → 字段 */
+.ex-sample{display:grid;grid-template-columns:minmax(0,1fr) 40px minmax(0,1.2fr);gap:0;align-items:center}
+.ex-sample .raw{font-size:13px}
+.ex-sample .mid{text-align:center;color:var(--faint);font-size:20px}
+.ex-sample table td,.ex-sample table th{padding:7px 10px}
+mark.ex-m{background:var(--accent-soft);color:var(--accent);padding:0 2px;border-radius:3px}
+/* 两种能力分工 */
+.ex-duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.ex-duo > div{padding:16px 18px}
+.ex-duo > div + div{border-left:1px solid var(--line)}
+.ex-duo h4{margin:0 0 8px;font-size:15px;display:flex;gap:8px;align-items:center}
+.ex-duo ul{margin:0;padding-left:18px;font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.ex-map svg{width:100%;height:auto;display:block}
+.ex-map .road{stroke:var(--line);stroke-width:1}
+.ex-map .pt{fill:var(--surface);stroke:var(--muted);stroke-width:1.5}
+.ex-map .dc{fill:var(--fg)}
+.ex-map .lbl{fill:var(--muted);font-size:10px;font-family:var(--f-body)}
+.ex-map .r1{stroke:var(--bad);fill:none;stroke-width:2;stroke-dasharray:4 3;opacity:.8}
+.ex-map .r2{stroke:var(--accent);fill:none;stroke-width:2.4}
+.ex-map .r3{stroke:var(--ok);fill:none;stroke-width:2.4}
+.ex-map .r4{stroke:var(--vio);fill:none;stroke-width:2.4}
+/* 安全 */
+.ex-net{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:18px;align-items:center}
+.ex-in{border:2px solid var(--ok);border-radius:16px;padding:28px 16px 16px;position:relative;background:var(--ok-soft)}
+.ex-in::before{content:"🔒 企业内网（公司自己的机房 / 私有云）";position:absolute;top:-12px;left:16px;background:var(--ok);color:#fff;font-size:12px;font-weight:600;padding:2px 10px;border-radius:6px}
+.ex-in-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.ex-box{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px}
+.ex-box b{display:block;font-size:14px}
+.ex-box span{color:var(--muted);font-size:12px}
+.ex-out{border:2px dashed var(--bad);border-radius:14px;padding:16px;text-align:center;color:var(--muted);font-size:13px;position:relative}
+.ex-out b{display:block;color:var(--fg);font-size:14px;margin-bottom:4px}
+.ex-out .x{font-size:28px;color:var(--bad);line-height:1;margin-bottom:6px}
+.ex-mx td,.ex-mx th{text-align:center}
+.ex-mx td:first-child,.ex-mx th:first-child{text-align:left}
+/* 审批 */
+.ex-lv{padding:16px;display:flex;flex-direction:column;gap:8px;border-top:4px solid var(--line)}
+.ex-lv .t{display:flex;align-items:center;gap:8px}
+.ex-lv .t b{font-size:16px}
+.ex-lv p{margin:0;font-size:13px;color:var(--muted)}
+.ex-lv .eg{font-size:12px;color:var(--muted);background:var(--surface2);border-radius:8px;padding:8px 10px}
+.ex-apcard{max-width:520px;padding:0;overflow:hidden}
+.ex-apcard .hd{padding:12px 16px;background:var(--warn-soft);display:flex;align-items:center;gap:8px;font-weight:600}
+.ex-apcard .bd{padding:14px 16px;display:flex;flex-direction:column;gap:8px;font-size:13px}
+.ex-apcard .row{display:grid;grid-template-columns:76px minmax(0,1fr);gap:10px}
+.ex-apcard .row span:first-child{color:var(--muted)}
+.ex-apcard .ft{padding:12px 16px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ex-log{font-family:var(--f-mono);font-size:12px;display:flex;flex-direction:column;gap:4px;color:var(--muted)}
+.ex-log .ok{color:var(--ok)}
+.ex-foot{display:flex;justify-content:space-between;gap:10px;margin-top:22px;padding-top:16px;border-top:1px solid var(--line);flex-wrap:wrap}
+.ex-entry{display:flex;align-items:center;gap:14px;padding:14px 18px;flex-wrap:wrap;border-color:var(--accent);background:linear-gradient(120deg,var(--accent-soft),var(--surface) 75%)}
+.ex-entry .t{flex:1;min-width:200px}
+.ex-entry .t b{font-size:15px}.ex-entry .t p{margin:2px 0 0;font-size:13px;color:var(--muted)}
+.ex-standalone{max-width:1180px;margin:0 auto}
+.ex-standalone .ex-top{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.ex-standalone .ex-top .btn{margin-left:auto}
+@media (max-width:1100px){
+  .ex-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .ex-g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ex-arch,.ex-net{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:760px){
+  .ex-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ex-g3,.ex-g2,.ex-vs,.ex-duo,.ex-detail{grid-template-columns:minmax(0,1fr)}
+  .ex-duo > div + div,.ex-detail > div + div{border-left:0;border-top:1px solid var(--line);border-radius:0 0 12px 12px}
+  .ex-layer{grid-template-columns:minmax(0,1fr)}
+  .ex-steps{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:14px}
+  .ex-step:nth-child(4)::before{display:none}
+  .ex-sample{grid-template-columns:minmax(0,1fr)}
+  .ex-sample .mid{transform:rotate(90deg)}
+  .ex-in-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ex-flow{flex-direction:column}
+  .ex-arrow{width:auto;height:22px;transform:rotate(90deg)}
+  .ex-node{min-width:0}
+  .ex-lead .big{display:none}
+}
+.ex-tabs{grid-template-columns:repeat(5,minmax(0,1fr))}
+/* 架构图 */
+.ex-phsel{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.ex-phsel button{border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:4px 14px;font-size:13px}
+.ex-phsel button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-fg);font-weight:600}
+.ex-phsel span{font-size:12px;color:var(--faint);margin-left:6px}
+.ex-ad{display:flex;flex-direction:column;gap:10px;border:2px dashed var(--ok);border-radius:16px;padding:26px 14px 14px;position:relative}
+.ex-ad::before{content:"企业内网 · 私有化部署";position:absolute;top:-11px;left:18px;background:var(--bg);color:var(--ok);font-size:12px;font-weight:600;padding:0 8px}
+.ex-ad-mid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2.2fr) minmax(0,1fr);gap:10px}
+.ex-ad-core{display:flex;flex-direction:column;gap:10px;border:1px solid var(--accent);border-radius:12px;padding:10px;background:var(--accent-soft)}
+.ex-ad-side{display:flex}.ex-ad-side .ex-ab{flex:1}
+.ex-ab{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.ex-ab .hd{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.ex-ab .hd b{font-size:14px}.ex-ab .hd span{font-size:12px;color:var(--muted)}
+.ex-ab .dot{width:9px;height:9px;border-radius:3px;align-self:center;flex:none}
+.ex-chip em{font-style:normal;font-size:10px;margin-left:5px;padding:0 4px;border-radius:4px;background:var(--vio-soft);color:var(--vio)}
+.ex-chip.dim{opacity:.35}
+.ex-chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-fg);font-weight:600}
+/* 分期卡片 */
+.ex-phc{text-align:left;padding:16px;display:flex;flex-direction:column;gap:6px;border-top:4px solid var(--pc)}
+.ex-phc.on{box-shadow:0 0 0 3px var(--accent-soft);border-color:var(--pc)}
+.ex-phc .t{display:flex;align-items:center;gap:8px}.ex-phc .t b{font-size:15px}
+.ex-phn{background:var(--pc);color:#fff;font-size:12px;font-weight:700;padding:1px 8px;border-radius:6px}
+.ex-phc p{margin:0;font-size:13px;color:var(--muted)}
+.ex-phc .lbl{font-size:11px;color:var(--faint);letter-spacing:.06em;margin-top:6px}
+.ex-phc ul{margin:0;padding-left:18px;font-size:13px;display:flex;flex-direction:column;gap:2px}
+/* 实时监听 */
+.ex-live{display:grid;grid-template-columns:260px minmax(0,1fr) minmax(0,1.1fr);gap:14px;align-items:start}
+.ex-live .btn{justify-content:flex-start;white-space:normal;text-align:left}
+.ex-dot{width:10px;height:10px;border-radius:50%;flex:none}
+.ex-rec{font-size:12px;color:var(--ok);font-weight:600}
+.ex-ev{display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;padding:10px 14px;animation:exIn .35s ease}
+.ex-ev.on{background:var(--accent-soft)}
+.ex-ev .ch{width:28px;height:28px;border-radius:8px;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700;flex:none}
+.ex-ev .t{flex:1;min-width:0}.ex-ev .t b{font-size:13px;display:block}.ex-ev small{display:block;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ex-prog{display:flex;gap:3px;margin-top:4px}.ex-prog i{width:18px;height:4px;border-radius:2px;background:var(--line)}.ex-prog i.on{background:var(--accent)}
+@keyframes exIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media (max-width:1100px){.ex-live{grid-template-columns:minmax(0,1fr)}.ex-ad-mid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:1100px){.ex-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:760px){.ex-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (prefers-reduced-motion:reduce){.ex-ev{animation:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -399,6 +605,7 @@ const IC = {
   edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',
   share:'<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="m8.2 11 7.6-3.8M8.2 13l7.6 3.8"/>',
   trace:'<path d="M3 12h4l3-7 4 14 3-7h4"/>',
+  bulb:'<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>',
 };
 const ico = k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[k]}</svg>`;
 
@@ -413,7 +620,7 @@ function navFor(r){
   const cfg = [{id:'kb',n:'知识库',i:'book'}];
   if(r==='mgmt'||r==='admin') cfg.push({id:'usage',n:'用量与效果',i:'chart'});
   const sys = r==='admin' ? [{id:'users',n:'用户与角色',i:'users'},{id:'plugins',n:'插件',i:'plug'},{id:'connectors',n:'Bridge 连接器',i:'link'},{id:'models',n:'模型网关',i:'cpu'},{id:'audit',n:'审计与 Trace',i:'shield'}] : [];
-  return [['工作区',w],['业务',biz],['资源',cfg],['系统',sys]].filter(s=>s[1].length);
+  return [['工作区',w],['业务',biz],['资源',cfg],['系统',sys],['了解平台',[{id:'explain',n:'平台原理',i:'bulb'}]]].filter(s=>s[1].length);
 }
 
 /* ================= 入口：身份选择 ================= */
@@ -429,10 +636,12 @@ function renderLogin(){
         <div class="rc-top"><div class="av" style="background:${r.color}">${r.name[0]}</div><div><b>${r.name}</b><div class="dept">${r.dept}</div></div></div>
         <p>${r.desc}</p>
         <div class="rc-foot"><span>演示账号：${r.user}</span><span class="num">${n} 个智能体</span></div></button>`}).join('')}</div></div>`).join('')}</div>
+    <div class="panel ex-entry"><div class="logo" style="width:38px;height:38px;font-size:18px">💡</div><div class="t"><b>第一次了解？先看平台原理</b><p>技术路线、整体架构、分期建设、多智能体协同、两个试点和数据安全，9 页讲清楚。</p></div><button class="btn pri" type="button" id="exOpen">查看平台原理 →</button></div>
     <div class="login-note">所有数据均为演示数据，不连接真实业务系统。</div></div>`;
   L.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>enter(b.dataset.role));
+  $('#exOpen').onclick=()=>{S.ex='route';renderExplainStandalone();window.scrollTo(0,0)};
 }
-function enter(r){S.role=r;S.page='home';S.chatAgent=null;try{localStorage.setItem('qzt-role',r)}catch(e){};renderApp();}
+function enter(r){S.exStandalone=false;S.role=r;S.page='home';S.chatAgent=null;try{localStorage.setItem('qzt-role',r)}catch(e){};renderApp();}
 function logout(){S.role=null;try{localStorage.removeItem('qzt-role')}catch(e){};renderLogin();}
 
 /* ================= 主框架 ================= */
@@ -448,11 +657,11 @@ function renderApp(){
   $('#switchRole').onclick=logout;
   renderPage();
 }
-function go(p,extra){S.page=p;Object.assign(S,extra||{});$('#nav').classList.remove('open');renderApp();$('#main').scrollTop=0;window.scrollTo(0,0)}
+function go(p,extra){exStop();exAutoStop();S.page=p;Object.assign(S,extra||{});$('#nav').classList.remove('open');renderApp();$('#main').scrollTop=0;window.scrollTo(0,0)}
 $('#menuBtn').onclick=()=>$('#nav').classList.toggle('open');
 
 function renderPage(){
-  const P = {home:pHome,chat:pChat,agents:pAgents,orderin:pOrder,route:pRoute,approve:pApprove,kb:pKB,usage:pUsage,coop:pCoop,users:pUsers,plugins:pPlugins,connectors:pConnectors,models:pModels,audit:pAudit}[S.page]||pHome;
+  const P = {explain:pExplain,home:pHome,chat:pChat,agents:pAgents,orderin:pOrder,route:pRoute,approve:pApprove,kb:pKB,usage:pUsage,coop:pCoop,users:pUsers,plugins:pPlugins,connectors:pConnectors,models:pModels,audit:pAudit}[S.page]||pHome;
   $('#main').innerHTML = `<div class="page">${P()}</div>`;
   bind();
 }
@@ -476,7 +685,7 @@ function pHome(){
       <div class="panel"><div class="panel-h"><h3>我的常用智能体</h3><button class="btn sm r" type="button" data-go="agents">全部</button></div>
         ${quick.map(a=>`<div class="quick"><div class="c-ic" style="background:${a.c}">${a.ch}</div><div class="t"><b>${a.name}</b><small>${a.desc}</small></div>${a.page?`<button class="btn sm" type="button" data-go="${a.page}">打开</button>`:`<button class="btn sm" type="button" data-chat="${a.id}">对话</button>`}</div>`).join('')||'<div class="empty">暂无</div>'}</div>
     </div>
-    <div class="panel" style="margin-top:16px"><div class="panel-h"><h3>一条请求是怎么跑的</h3></div><div class="panel-b"><div class="flow"><span>${r.name}前台</span>→<span>治理层：身份 · 空间 · 权限</span>→<span>Dify 工作流 / Agent</span>→<span>知识库 · 插件（求解器 / OCR / 科大组件）</span>→<span>Bridge 网关 → OWTB · TMS · WMS</span>→<span>写入需审批 · 全程 Trace</span></div></div></div>`;
+    <div class="panel" style="margin-top:16px"><div class="panel-h"><h3>一条请求是怎么跑的</h3><button class="btn sm r" type="button" data-go="explain">${ico('bulb')}看平台原理</button></div><div class="panel-b"><div class="flow"><span>${r.name}前台</span>→<span>治理层：身份 · 空间 · 权限</span>→<span>Dify 工作流 / Agent</span>→<span>知识库 · 插件（求解器 / OCR / 科大组件）</span>→<span>Bridge 网关 → OWTB · TMS · WMS</span>→<span>写入需审批 · 全程 Trace</span></div></div></div>`;
 }
 
 /* ---------- 智能体（卡片，参考截图） ---------- */
@@ -527,7 +736,7 @@ function pChat(){
         <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)">API Key<input id="llmKey" type="password" autocomplete="off" placeholder="sk-…" value="${esc(LLM.key)}" style="border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface);color:var(--fg)"></label>
         <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)">接口地址<input id="llmBase" value="${esc(LLM.base)}" style="border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface);color:var(--fg)"></label>
         <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)">模型<select id="llmModel" style="border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface);color:var(--fg)">${['deepseek-chat','deepseek-reasoner'].map(m=>`<option ${m===LLM.model?'selected':''}>${m}</option>`).join('')}</select></label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" type="submit">保存</button><button class="btn" type="button" id="llmTest">测试连接</button>${live?'<button class="btn danger" type="button" id="llmClear">清除</button>':''}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" type="submit">保存</button><button class="btn" type="button" id="llmTest">测试连接</button>${live?'<button class="btn danger" type="button" id="llmClear">清除 Key</button>':''}</div>
         <div id="llmMsg" style="grid-column:1/-1;font-size:12px;color:var(--muted)">接口地址填 DeepSeek 官方地址，或内网部署的 OpenAI 兼容网关（如 OneAPI）。调用失败时自动回落到演示回答。</div>
       </form></div>`:'')+
    `<div class="panel chat"><div class="chat-list">${list.map(x=>`<button type="button" class="${x.id===a.id?'on':''}" data-pick="${x.id}"><div class="c-ic" style="background:${x.c}">${x.ch}</div><div style="min-width:0"><b>${x.name}</b><small>${x.kind} · ${x.lv}</small></div></button>`).join('')}</div>
@@ -536,8 +745,10 @@ function pChat(){
       <form class="composer" id="composer"><input id="chatIn" placeholder="向「${esc(a.name)}」提问…" autocomplete="off"><button class="btn pri" type="submit">发送</button></form></div></div>`;
 }
 /* ---------- DeepSeek 接入（OpenAI 兼容接口） ---------- */
-const LLM = {key:'', base:'https://api.deepseek.com', model:'deepseek-chat'};
+const DEFAULT_KEY = ''; // 不在页面里写死 Key：在「对话 → 模型设置」中填写，只保存在本机浏览器
+const LLM = {key:DEFAULT_KEY, base:'https://api.deepseek.com', model:'deepseek-chat'};
 try{ const j = JSON.parse(localStorage.getItem('qzt-llm')||'null'); if(j) Object.assign(LLM,j); }catch(e){}
+if(!LLM.key) LLM.key = DEFAULT_KEY;
 function saveLLM(){ try{ localStorage.setItem('qzt-llm', JSON.stringify(LLM)); }catch(e){} }
 const LV = {L1:'只读分析，只给信息和建议',L2:'给出可选方案，由人选择后执行',L3:'可准备写入业务系统的操作，但必须经人工审批后才执行'};
 function systemPrompt(a){
@@ -725,6 +936,7 @@ function pAudit(){
 function bind(){
   const M=$('#main');
   M.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+  if(S.page==='explain') bindExplain(M);
   M.querySelectorAll('[data-chat]').forEach(b=>b.onclick=()=>go('chat',{chatAgent:b.dataset.chat}));
   M.querySelectorAll('[data-toast]').forEach(b=>b.onclick=()=>toast(b.dataset.toast));
   M.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{S.agentTab=b.dataset.tab;renderPage()});
@@ -742,7 +954,7 @@ function bind(){
       msg.textContent='正在测试…';
       try{const o=await callLLM(AGENTS[0],[{role:'user',content:'用一句话回复：连接成功'}]);msg.innerHTML='<span style="color:var(--ok)">连接成功：</span>'+esc(o.text)}
       catch(e){msg.innerHTML='<span style="color:var(--bad)">连接失败：</span>'+esc(e.message||String(e))+'。如果是网络错误，通常是当前页面环境禁止访问外部接口，请用本地打开的版本或内网网关。'}};
-    const lc=$('#llmClear'); if(lc) lc.onclick=()=>{LLM.key='';saveLLM();S.llmOpen=false;toast('已清除 Key，切回演示模式');renderPage()};
+    const lc=$('#llmClear'); if(lc) lc.onclick=()=>{LLM.key=DEFAULT_KEY;saveLLM();S.llmOpen=false;toast('已清除 Key，回到演示模式');renderPage()};
   }
   const f=$('#composer'); if(f){f.onsubmit=e=>{e.preventDefault();const v=$('#chatIn').value.trim();if(v)sendChat(v)}; const m=$('#msgs'); if(m) m.scrollTop=m.scrollHeight;}
   M.querySelectorAll('[data-ord]').forEach(b=>b.onclick=()=>{S.order=b.dataset.ord;renderPage()});
@@ -751,6 +963,411 @@ function bind(){
   M.querySelectorAll('[data-plan]').forEach(b=>b.onclick=()=>{S.plan=b.dataset.plan;renderPage()});
   const sp=$('#submitPlan'); if(sp) sp.onclick=()=>{S.approvals['AP-1094']=undefined;toast(`方案 ${S.plan} 已提交派车审批（AP-1094）`);};
   M.querySelectorAll('[data-ap]').forEach(b=>b.onclick=()=>{S.approvals[b.dataset.ap]=b.dataset.v;toast(b.dataset.v==='ok'?'已通过，Bridge 正在防重执行并留痕':'已驳回，已通知提交人');renderApp()});
+}
+
+
+/* ================= 平台原理（给客户讲解，内容均为示意） ================= */
+const EX_TABS = [
+  {id:'route',n:'技术路线与扩展性'},
+  {id:'arch',n:'整体架构图'},
+  {id:'phase',n:'分阶段建设目标'},
+  {id:'multi',n:'多智能体如何协同'},
+  {id:'req',n:'一个请求怎么处理'},
+  {id:'p1',n:'试点一：订单自动入库'},
+  {id:'p2',n:'试点二：短驳路线优化'},
+  {id:'sec',n:'数据安全与私有化'},
+  {id:'hitl',n:'关键操作人来拍板'},
+];
+const EX_STEPS = [
+  {n:'听懂问题',who:[['ai','智能体平台']],t:'先弄清楚“你要什么、你是谁”',
+   d:'平台识别出这是一个“排短驳路线”的需求，交给「短驳路线优化」智能体处理；同时确认提问人是运输调度张强，有调度数据的查看权限。',
+   s:[['识别意图','排短驳路线'],['分派给','短驳路线优化智能体'],['提问人','张强 · 运输调度'],['权限校验','通过']],ms:'0.4 秒'},
+  {n:'收集资料',who:[['ai','Bridge 安全网关'],['ai','业务系统（只读）']],t:'从现有系统里把数据“看”过来，只读不改',
+   d:'通过 Bridge 网关，从运输系统读取今天 18 张短驳单，从仓储系统确认货已备好，再读入可用车辆和道路限行规则。这一步只读，不会改动任何数据。',
+   s:[['TMS 短驳单','18 单'],['WMS 备货状态','18 / 18 已备好'],['可用车辆','6 台（3 种车长）'],['道路限制','3 条（限高 / 限行）']],ms:'1.2 秒'},
+  {n:'专业计算',who:[['ai','路线求解器插件']],t:'交给专业算法计算，而不是让大模型“猜”',
+   d:'路线是数学问题。平台调用路线求解器，在载重、收货时间窗、限高限行等条件下，算出成本优先、准时优先、均衡三个可比较的方案。',
+   s:[['求解器','OR-Tools（运筹优化）'],['约束条件','载重 · 时窗 · 限高 · 装卸口'],['候选方案','3 个'],['约束满足率','100%']],ms:'12 秒'},
+  {n:'讲清结果',who:[['ai','大模型']],t:'把计算结果翻译成人话',
+   d:'大模型把三个方案的差别讲清楚：花多少钱、准不准时、哪里有风险，并说明为什么推荐“均衡方案”。每个数字都来自上一步的计算，可以追溯。',
+   s:[['推荐','方案 C · 均衡'],['预计费用','¥8,970（较人工 −7.4%）'],['预计准时率','96.1%'],['风险提示','嘉定 14:00 前装卸口满，已避开']],ms:'1.5 秒'},
+  {n:'人来拍板',who:[['hu','调度员选方案'],['hu','主管审批']],t:'动系统之前，必须有人确认',
+   d:'调度员看完对比后选择方案 C，点击“提交派车审批”。主管在审批中心看到方案内容和依据，确认后才会真正派车。不同意可以驳回。',
+   s:[['调度员','张强 选择方案 C'],['审批单','AP-1094 派车下发 TMS'],['审批人','赵总 · 运营总监'],['结果','已通过']],ms:'由人决定'},
+  {n:'执行与留痕',who:[['ai','Bridge 安全网关'],['ai','审计记录']],t:'执行一次、只执行一次，并留下完整记录',
+   d:'审批通过后，Bridge 把派车指令下发到运输系统。每条指令带有唯一编号，即使网络重试也不会重复派车。谁问的、看了什么数据、谁批准的，全部记录在案。',
+   s:[['下发','TMS 已生成 5 张派车单'],['防重编号','idem-rt-19bd04'],['审计记录','6 个步骤全部留痕'],['可回放','是']],ms:'0.8 秒'},
+];
+let exTimer=null;
+function exStop(){ if(exTimer){clearInterval(exTimer);exTimer=null;} }
+function exRender(){ if(S.exStandalone) renderExplainStandalone(); else renderPage(); }
+
+function pExplain(){
+  const t = S.ex||'route', i = EX_TABS.findIndex(x=>x.id===t);
+  const body = {route:exRoute,arch:exArch,phase:exPhase,multi:exMulti,req:exReq,p1:exP1,p2:exP2,sec:exSec,hitl:exHitl}[t]();
+  const prev = EX_TABS[i-1], next = EX_TABS[i+1];
+  return ph('平台原理','用大白话讲清楚：智能体是什么、怎么干活、数据怎么保证安全、关键操作谁说了算。',`<span class="pill p-acc">讲解演示 · 内容为示意</span>`)+
+    `<div class="ex-tabs" role="tablist">${EX_TABS.map((x,k)=>`<button class="ex-tab ${x.id===t?'on':''}" type="button" role="tab" aria-selected="${x.id===t}" data-ex="${x.id}"><i>${k+1}</i><span>${x.n}</span></button>`).join('')}</div>
+    <div>${body}</div>
+    <div class="ex-foot">${prev?`<button class="btn" type="button" data-ex="${prev.id}">← ${prev.n}</button>`:'<span></span>'}${next?`<button class="btn pri" type="button" data-ex="${next.id}">下一页：${next.n} →</button>`:(S.exStandalone?`<button class="btn pri" type="button" id="exEnter">选择身份，进入演示 →</button>`:`<button class="btn pri" type="button" data-ex="route">回到第一页</button>`)}</div>`;
+}
+
+/* 1. 技术路线 */
+function exRoute(){
+  const rows = [
+    ['一期上线速度','快：工作流、知识库、对话界面开箱即用，主要精力放在两个试点','慢：编排框架、管理后台、对话界面都要自己开发'],
+    ['开发与维护成本','低：社区成熟、文档齐全，团队以配置和插件开发为主','高：需要长期投入专职研发团队维护框架'],
+    ['业务人员可参与','可以：可视化拖拽工作流，业务骨干能看懂、能改简单流程','困难：流程写在代码里，改动依赖研发'],
+    ['复杂多智能体流程','够用：工作流 + Agent 节点 + 子流程覆盖一、二期场景；极复杂场景用插件补足','最灵活：可以实现任意复杂的协同逻辑'],
+    ['更换底座难度','中等：能力、数据、对接都在 Dify 之外，只需重建流程编排（见下表）','低：底座本身就是自己的'],
+    ['适合阶段','一期快速见效、二期规模推广','场景极复杂、团队研发力量充足时'],
+  ];
+  const swap = [
+    ['业务系统对接（Bridge 网关）','完全保留','独立服务，标准接口，与 Dify 无关',1],
+    ['专业算法（求解器、OCR、科大组件）','完全保留','封装为标准 HTTP 服务，换平台后重新注册即可',1],
+    ['大模型','完全保留','经模型网关统一接入（OpenAI 兼容），平台只调用网关',1],
+    ['用户、角色与权限','完全保留','来自企业微信 SSO 和统一权限服务',1],
+    ['知识库原始文档','完全保留','文档存放在自有存储，换平台后重新建索引',1],
+    ['审计日志与业务数据','完全保留','写在自有数据库，不锁在 Dify 里',1],
+    ['工作流编排逻辑','需要重建','Dify 流程可导出为 DSL 文件，作为重建蓝本',0],
+    ['对话界面与提示词','少量调整','提示词可直接复用，界面按新平台适配',0],
+  ];
+  return `<div class="panel ex-lead"><div class="big">🧭</div><div><h2>为什么选 Dify 作为统一底座，以及将来能不能换</h2>
+      <p>我们选择以开源平台 Dify 作为智能体的“中枢”，路线求解器、OCR、科大组件都以插件方式接入。这样一期可以把精力集中在业务试点上；同时在设计上把能力、数据和系统对接都放在 Dify 之外，保留将来更换底座的可能。</p></div></div>
+    <div class="ex-g2">
+      <div class="panel ex-card" style="border-color:var(--accent)"><div class="t" style="display:flex;gap:8px;align-items:center"><span class="pill p-acc">采用</span><b>路线 A：Dify 统一底座 + 插件</b></div>
+        <p>Dify 负责对话、工作流、知识库和智能体管理；专业能力做成插件；业务系统经 Bridge 网关接入。</p>
+        <div class="ex-chips"><span class="ex-chip">开源可私有化</span><span class="ex-chip">可视化编排</span><span class="ex-chip">上线快</span><span class="ex-chip">社区活跃</span></div></div>
+      <div class="panel ex-card"><div class="t" style="display:flex;gap:8px;align-items:center"><span class="pill p-mute">备选</span><b>路线 B：自研编排框架</b></div>
+        <p>基于 LangGraph 等开发框架自建编排层、管理后台和前端，Dify 最多作为其中一个组件。</p>
+        <div class="ex-chips"><span class="ex-chip">最灵活</span><span class="ex-chip">投入大</span><span class="ex-chip">周期长</span></div></div>
+    </div>
+    <div class="ex-sec-t">两条路线对比</div>
+    <div class="panel tbl-wrap"><table><tr><th style="width:140px">维度</th><th>A：Dify 统一底座（采用）</th><th>B：自研编排</th></tr>
+      ${rows.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td style="color:var(--muted)">${r[2]}</td></tr>`).join('')}</table></div>
+    <div class="ex-sec-t">如果将来要更换底座，哪些能保留？ <small>“可插拔”设计的关键</small></div>
+    <div class="panel tbl-wrap"><table><tr><th>组成部分</th><th>换底座时</th><th>为什么</th></tr>
+      ${swap.map(r=>`<tr><td><b>${r[0]}</b></td><td><span class="pill ${r[3]?'p-ok':'p-warn'}">${r[1]}</span></td><td style="color:var(--muted)">${r[2]}</td></tr>`).join('')}</table></div>
+    <div class="ex-note">结论：真正“绑定”在 Dify 上的只有流程编排这一层。8 个组成部分里 6 个完全保留，换底座的主要工作是重建工作流（示意估算）。</div>
+    <div class="ex-sec-t">后期怎么扩展</div>
+    <div class="ex-g4">
+      ${[['＋','加一个新智能体',C.blue,'在 Dify 里配置工作流，复用已有插件和知识库，通常几天到两周。'],['⚙','加一种新算法',C.teal,'把算法包装成标准插件注册上来，所有智能体都能调用。'],['⇄','接一个新系统',C.orange,'在 Bridge 网关加一个连接器，权限、审批、留痕自动生效。'],['◎','换一个大模型',C.vio,'在模型网关切换，智能体无需改动；可多个模型并存按场景分配。']]
+        .map(c=>`<div class="panel ex-card"><div class="ic" style="background:${c[2]}">${c[0]}</div><b>${c[1]}</b><p>${c[3]}</p></div>`).join('')}
+    </div>`;
+}
+
+/* 2. 整体架构图（与分阶段共用） */
+const EX_ARCH = {
+  client:{n:'客户端',s:'员工直接使用的入口',t:'客户端',c:C.sky,it:[['企业微信应用',1],['Web 工作台',1],['手机拍照上传',1],['消息监听（邮件 / 微信群）',1],['移动端审批',2],['钉钉等其他入口',3]]},
+  auth:{n:'权限分发',s:'谁能用什么、看什么',t:'权限',c:C.green,it:[['企业微信 SSO 登录',1],['岗位角色管理',1],['按角色分发智能体',1],['数据权限（只读 / 可写）',1],['字段级脱敏',2],['跨部门授权申请',3]]},
+  admin:{n:'管理后台',s:'给管理员和运营人员用',t:'后台',c:C.navy,it:[['智能体发布与上下线',1],['知识库管理',1],['插件与连接器管理',1],['模型网关配置',1],['审计与 Trace',1],['用量与效果看板',2],['业务自助搭建',3]]},
+  orch:{n:'智能体编排中心 · Dify',s:'理解需求、安排步骤、协调多个智能体',t:'核心',c:C.blue,it:[['对话与意图识别',1],['工作流编排',1],['知识库检索（RAG）',1],['审批节点',1],['多智能体协同调度',2],['定时任务',2]]},
+  plug:{n:'能力插件',s:'专业的事交给专业工具',t:'核心',c:C.teal,it:[['OCR / 视觉识别',1],['OR-Tools 路线求解',1],['Bridge 工具集',1],['科大定价组件',2],['科大库存 / 预测组件',2],['HiGHS 线性规划',2],['物流仿真（DSH）',2]]},
+  model:{n:'模型层',s:'私有化部署的大模型',t:'核心',c:C.vio,it:[['Qwen 主模型',1],['轻量模型（抽取 / 路由）',1],['Qwen-VL 视觉模型',1],['向量与重排模型',1],['行业微调模型',3]]},
+  bridge:{n:'Bridge 业务网关',s:'智能体进出业务系统的唯一通道',t:'网关',c:C.orange,it:[['读写分离',1],['写操作审批',1],['防重复执行',1],['全程留痕',1],['事件推送（GPS / IoT）',2]]},
+  biz:{n:'现有业务系统',s:'保持不变',t:'系统',c:C.gray,it:[['OWTB / OMS 订单',1],['TMS 运输',1],['WMS 仓储',1],['结算',1],['ERP / 客户系统',2],['GPS / IoT 轨迹',2]]},
+  infra:{n:'基础设施',s:'企业内网 · 私有化部署',t:'基础',c:C.gray,it:[['GPU 推理服务器',1],['私有云 / 容器平台',1],['存储与备份',1],['监控告警',1],['高可用双活',3]]},
+};
+function exArchBox(k,ph){
+  const b=EX_ARCH[k];
+  return `<div class="ex-ab"><div class="hd"><span class="dot" style="background:${b.c}"></span><b>${b.n}</b><span>${b.s}</span></div>
+    <div class="ex-chips">${b.it.map(i=>`<span class="ex-chip ${ph&&i[1]!==ph?'dim':''} ${ph&&i[1]===ph?'on':''}">${i[0]}${!ph&&i[1]>1?`<em>${i[1]===2?'二期':'三期'}</em>`:''}</span>`).join('')}</div></div>`;
+}
+function exArchDiagram(ph){
+  return `<div class="ex-phsel">${[[0,'全部'],[1,'一期'],[2,'二期'],[3,'三期']].map(p=>`<button type="button" class="${(ph||0)===p[0]?'on':''}" data-exph="${p[0]}">${p[1]}</button>`).join('')}<span>选择阶段，高亮该阶段要建设的部分</span></div>
+   <div class="ex-ad">
+    <div class="ex-ad-row">${exArchBox('client',ph)}</div>
+    <div class="ex-ad-mid"><div class="ex-ad-side">${exArchBox('auth',ph)}</div>
+      <div class="ex-ad-core">${exArchBox('orch',ph)}${exArchBox('plug',ph)}${exArchBox('model',ph)}</div>
+      <div class="ex-ad-side">${exArchBox('admin',ph)}</div></div>
+    <div class="ex-ad-row">${exArchBox('bridge',ph)}</div>
+    <div class="ex-ad-row">${exArchBox('biz',ph)}</div>
+    <div class="ex-ad-row">${exArchBox('infra',ph)}</div>
+   </div>`;
+}
+function exArch(){
+  return `<div class="panel ex-lead"><div class="big">🏗️</div><div><h2>平台由哪些部分组成</h2>
+      <p>从上往下看：员工在<b>客户端</b>提需求，<b>权限分发</b>决定他能用哪些智能体，<b>编排中心</b>调用<b>能力插件</b>和<b>大模型</b>完成任务，所有对业务系统的读写都经过 <b>Bridge 网关</b>。<b>管理后台</b>负责配置、发布和审计。</p></div></div>
+    ${exArchDiagram(S.exPh||0)}
+    <div class="ex-sec-t">各部分是做什么的</div>
+    <div class="panel tbl-wrap"><table><tr><th>功能类型</th><th>谁在用</th><th>一句话说明</th></tr>
+      <tr><td><b>客户端</b></td><td>全体员工</td><td>企业微信、网页、手机拍照，像聊天一样使用智能体；订单渠道由系统自动监听。</td></tr>
+      <tr><td><b>权限分发</b></td><td>系统自动</td><td>登录即识别岗位，按岗位自动分发可用的智能体和可见数据，离职调岗自动回收。</td></tr>
+      <tr><td><b>管理后台</b></td><td>信息部、运营负责人</td><td>发布或下线智能体、维护知识库、管理插件和模型、查看用量和审计记录。</td></tr>
+      <tr><td><b>编排中心 / 插件 / 模型</b></td><td>平台内部</td><td>平台的“大脑和工具箱”：理解问题、安排步骤、调用专业算法、组织多个智能体协作。</td></tr>
+      <tr><td><b>Bridge 业务网关</b></td><td>平台内部</td><td>业务系统前的“门卫”：检查权限、写操作必须审批、防重复、全程留痕。</td></tr>
+      <tr><td><b>业务系统 / 基础设施</b></td><td>现有系统</td><td>OWTB、TMS、WMS 等保持不变；全部部署在企业内网。</td></tr></table></div>`;
+}
+
+/* 3. 分阶段建设 */
+const EX_PHASES = [
+  {n:'一期',s:'底座 + 两个试点',c:'var(--accent)',goal:'把平台底座搭起来，用两个高频场景跑通“识别 → 计算 → 人工确认 → 写入”的完整闭环。',
+   agents:['多模态订单自动入库（试点一）','复杂场景短驳路线优化（试点二）','通用助手、制度与 SOP 问答'],
+   plat:['Dify、私有化大模型部署','企业微信 SSO、岗位权限分发','Bridge 对接 OWTB / TMS / WMS','OCR、路线求解器插件','审批中心、审计 Trace'],
+   kpi:['订单识别字段准确率 ≥ 95%','重复写入 0 次','短驳方案成本较人工下降 5% 以上','写操作 100% 人工审批留痕']},
+  {n:'二期',s:'多智能体协同 + 扩展场景',c:'var(--vio)',goal:'让多个智能体协同工作，接入科大专业组件，覆盖更多运营岗位。',
+   agents:['每日协同决策（预测、库存、定价会商）','运输异常预警（接入 GPS）','干线配载优化','物流仿真（按需接入 DSH）'],
+   plat:['多智能体协同调度、定时任务','科大定价 / 库存 / 预测组件','ERP、GPS / IoT 接入','字段级脱敏、移动端审批','用量与效果看板'],
+   kpi:['在用智能体 15 个以上','每日协同报告 9:30 前生成','异常提前预警率提升']},
+  {n:'三期',s:'全面推广 + 业务自助',c:'var(--ok)',goal:'从“信息部建”走向“业务部门自己建”，在全公司推广并持续优化。',
+   agents:['各部门按需自助搭建的智能体','跨部门协同流程'],
+   plat:['业务自助搭建与模板市场','行业微调模型','钉钉等更多入口','高可用双活部署'],
+   kpi:['覆盖全部核心岗位','业务部门自助上线智能体']},
+];
+function exPhase(){
+  const ph=S.exPh==null?1:S.exPh;
+  return `<div class="panel ex-lead"><div class="big">🗺️</div><div><h2>分三期建设，每期都能看到实际效果</h2>
+      <p>不追求一次建成，而是先用两个高频场景验证价值，再逐步扩展。下方架构图会高亮每一期要建设的部分。</p></div></div>
+    <div class="ex-g3">${EX_PHASES.map((p,k)=>`<button type="button" class="panel ex-phc ${ph===k+1?'on':''}" data-exph="${k+1}" style="--pc:${p.c}">
+      <div class="t"><span class="ex-phn">${p.n}</span><b>${p.s}</b></div><p>${p.goal}</p>
+      <div class="lbl">上线的智能体</div><ul>${p.agents.map(a=>`<li>${a}</li>`).join('')}</ul>
+      <div class="lbl">平台能力</div><ul>${p.plat.map(a=>`<li>${a}</li>`).join('')}</ul>
+      <div class="lbl">验收目标（示意）</div><ul>${p.kpi.map(a=>`<li>${a}</li>`).join('')}</ul></button>`).join('')}</div>
+    <div class="ex-sec-t">${ph?EX_PHASES[ph-1].n:'各阶段'}在整体架构中的位置 <small>高亮部分为本期建设内容</small></div>
+    ${exArchDiagram(ph)}`;
+}
+
+/* 4. 多智能体协同 */
+const EX_MA = {
+  route:{n:'分派',s:'一个入口，自动找对专家',d:'员工不需要知道该找哪个智能体。前台的“调度员”智能体先听懂问题，再转给对应的专业智能体，必要时同时问几个。',
+    flow:[['问','员工提问','“B-1180 明天能送到安亭吗？”',C.sky],['判','路由智能体','判断涉及库存和运输两件事',C.blue],['专','专业智能体','库存分析 + 订单跟踪 分别作答',C.teal],['合','汇总回答','合成一个答案，标明出处',C.vio]]},
+  relay:{n:'接力',s:'一个做完交给下一个',d:'像流水线一样，每个智能体完成自己那一段后，把一张标准“任务单”交给下一个。前一个的结果就是后一个的输入，谁做了什么一清二楚。',
+    flow:[['单','订单入库','识别客户追加订单',C.teal],['库','库存分析','确认昆山仓可分配量',C.sky],['拆','智能拆单','拆为两个仓发货',C.blue],['驳','短驳路线','把新单并入今日排线',C.orange],['批','人工审批','调度确认后派车','',1]]},
+  meet:{n:'会商',s:'多个专家同时分析，汇总给人决策',d:'复杂决策需要多方意见。每天 9 点冻结同一份数据快照，预测、库存、定价智能体同时分析，协调者把结论和冲突汇总成一页，交给管理者拍板。',
+    flow:[['快','冻结快照','9:00 同一份数据',C.gray],['并','三个智能体并行','需求预测 · 库存 · 定价',C.vio],['汇','协调者汇总','找出冲突和待决策项',C.blue],['决','管理者决策','选择方案并审批','',1]]},
+};
+function exMulti(){
+  const m=S.exMa||'relay', M=EX_MA[m];
+  return `<div class="panel ex-lead"><div class="big">🤝</div><div><h2>多个智能体怎么一起干活</h2>
+      <p>每个智能体只擅长一件事，就像公司里的不同岗位。编排中心（Dify）像项目经理，按事情的类型安排它们<b>分派</b>、<b>接力</b>或<b>会商</b>，关键节点交给人决定。</p></div></div>
+    <div class="ex-phsel">${Object.entries(EX_MA).map(([k,v])=>`<button type="button" class="${k===m?'on':''}" data-exma="${k}">${v.n} · ${v.s}</button>`).join('')}</div>
+    <div class="panel panel-b" style="margin-bottom:14px"><p style="margin:0 0 14px;color:var(--muted)">${M.d}</p>${exFlow(M.flow)}</div>
+    ${m==='relay'?`<div class="ex-g2" style="align-items:start"><div class="panel"><div class="panel-h"><h3>交接用的“任务单”</h3><span class="pill p-mute r">示意</span></div><div class="panel-b"><div class="ex-log">
+        <div>任务单 T-20261121-0331</div><div>来源：微信「安亭项目对接」09:05</div><div>上一步：订单入库 ✓ → 库存分析 ✓</div><div>当前：智能拆单</div>
+        <div>数据快照：snap-1121-0830（所有智能体用同一份）</div><div>权限：订单专员 王芳 · 只读 OWTB / WMS</div><div class="ok">待人工确认：拆单方案、派车</div></div></div></div>
+      <div class="panel"><div class="panel-h"><h3>场景：客户临时追加订单</h3></div><div class="panel-b" style="font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:6px">
+        <div>09:05 订单入库智能体识别出追加 200 套 B-1180</div><div>09:05 库存分析：嘉定仓只有 120 套，昆山仓有 300 套</div><div>09:06 智能拆单：嘉定 120 + 昆山 80，两单发货</div><div>09:06 短驳路线：昆山这单并入下午第 3 车，成本增加 ¥210</div><div style="color:var(--fg)">09:08 订单专员和调度各自确认后执行，全程 3 分钟</div></div></div></div>`
+    : m==='meet'?`<div class="panel"><div class="panel-h"><h3>会商结果示例：每日协同决策</h3><span class="pill p-mute r">二期 · 示意</span></div><div class="tbl-wrap"><table><tr><th>智能体</th><th>结论</th><th>冲突</th></tr>
+        <tr><td>需求预测</td><td>某主机厂下周需求上升 18%</td><td rowspan="2"><span class="pill p-warn">冲突</span> 预测要多备货，库存说仓容不够</td></tr>
+        <tr><td>库存分析</td><td>嘉定仓库容利用率已达 91%</td></tr>
+        <tr><td>定价</td><td>临时加车可按合同上浮 8%</td><td><span class="pill p-ok">一致</span></td></tr>
+        <tr><td><b>交给管理者</b></td><td colspan="2">方案一：借用昆山仓 · 方案二：分两批到货。附成本对比，请选择。</td></tr></table></div></div>`
+    : `<div class="panel panel-b" style="font-size:13px;color:var(--muted)">员工只需要在一个对话框里提问。路由智能体发现问题同时涉及“库存”和“在途”，就会同时调用两个专业智能体，再把答案合成一句话：<b style="color:var(--fg)">“昆山仓有货，今天 16:00 前下单可赶上明早第一车，预计 9:40 到安亭 3 号门。”</b></div>`}
+    <div class="ex-sec-t">协同的五条规矩</div>
+    <div class="ex-g3">
+      ${[['同一份数据','所有智能体基于同一个时间点的数据快照，不会各说各话。'],['标准任务单交接','谁做了什么、依据是什么都写在任务单上，可追溯。'],['各守各的权限','每个智能体只能访问它岗位范围内的数据。'],['冲突交给人','智能体之间意见不一致时，不自行“拍板”，汇总给人决策。'],['统一编排','由 Dify 工作流统一调度，出错可在任一环节停下重试。']]
+        .map((c,k)=>`<div class="panel ex-card"><b>${k+1}. ${c[0]}</b><p>${c[1]}</p></div>`).join('')}
+    </div>`;
+}
+
+/* 2. 一个请求怎么处理 */
+function exReq(){
+  const k = S.exStep||0, s = EX_STEPS[k];
+  return `<div class="panel ex-ask"><div class="av" style="width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;background:${C.orange};flex:none">张</div>
+      <div style="flex:1;min-width:0"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">运输调度 张强 在企业微信里问：</div><div class="q">今天下午嘉定到安亭这 18 单短驳，怎么排最省？</div></div>
+      <div class="ex-ctrl"><button class="btn" type="button" id="exPlay">${exTimer?'⏸ 暂停':'▶ 自动播放'}</button></div></div>
+    <div class="ex-steps">${EX_STEPS.map((x,j)=>`<button class="ex-step ${j<k?'done':j===k?'cur':''}" type="button" data-exstep="${j}"><i>${j+1}</i><span>${x.n}</span></button>`).join('')}</div>
+    <div class="panel ex-detail"><div>
+        <div class="ex-who">${s.who.map(w=>`<span class="${w[0]==='hu'?'ex-who-hu':'ex-who-ai'}">${w[1]}</span>`).join('')}<span class="pill p-mute">耗时 ${s.ms}</span></div>
+        <div style="font-size:12px;color:var(--faint)">第 ${k+1} 步 / 共 6 步</div>
+        <h3>${s.n}：${s.t}</h3><p>${s.d}</p>
+        <div style="display:flex;gap:8px;margin-top:14px"><button class="btn sm" type="button" data-exstep="${Math.max(0,k-1)}" ${k?'':'disabled'}>上一步</button><button class="btn sm pri" type="button" data-exstep="${Math.min(5,k+1)}" ${k<5?'':'disabled'}>下一步</button></div></div>
+      <div><div class="ex-screen"><div class="lbl">这一步屏幕背后发生了什么</div>${s.s.map(r=>`<div class="row"><span>${r[0]}</span><b>${r[1]}</b></div>`).join('')}</div>
+        ${k===5?'<div class="ex-note" style="margin-top:10px">从提问到派车：机器工作约 16 秒，其余时间由人来判断和审批。</div>':''}</div></div>
+    <div class="ex-legend"><span><span class="ex-who-ai">蓝色</span> 机器自动完成</span><span><span class="ex-who-hu">橙色</span> 需要人确认</span><span>整个过程中，任何一步失败都会停下来提示，不会“带病”往下走。</span></div>`;
+}
+
+/* 订单入库：实时监听演示（模拟） */
+const EX_MSGS = {
+  wx:[{ch:'微信',src:'微信群「安亭项目对接」',raw:'王经理：明天再加 200 套门板饰条 B-1180，送安亭总装 3 号门，还是老规矩。',
+       f:[['客户','某主机厂 · 安亭总装','ok'],['料号','B-1180 门板饰条','ok'],['数量','200 套','ok'],['送达地点','安亭总装 3 号门','ok'],['送达时间','未写明（只说“老规矩”）','bad']],res:'bad'},
+      {ch:'微信',src:'微信群「昆山 VMI 对接」',raw:'@物流 周一上午 9 点前，A-2231 前保险杠支架 120 件送昆山 2 号仓，谢谢',
+       f:[['客户','某主机厂 · 昆山 VMI','ok'],['料号','A-2231 前保险杠支架','ok'],['数量','120 件','ok'],['送达地点','昆山 2 号仓','ok'],['送达时间','11/23 周一 09:00 前','ok']],res:'ok'}],
+  mail:[{ch:'邮件',src:'某主机厂物流部（邮件）',raw:'主题：11/24 安亭总装补货\n料号 C-3305 仪表板骨架 80 件；D-0912 线束 300 根。\n请于 11/24 10:00 前送达安亭总装 1 号门。',
+       f:[['客户','某主机厂 · 安亭总装','ok'],['料号','C-3305 仪表板骨架 / D-0912 线束','ok'],['数量','80 件 / 300 根','ok'],['送达地点','安亭总装 1 号门','ok'],['送达时间','11/24 10:00 前','ok']],res:'ok'},
+        {ch:'邮件',src:'某电池厂计划部（邮件 + Excel 附件）',raw:'附件：1125 发货计划.xlsx（共 6 行）\n烦请按附件安排明日发货，送常熟工厂原料库。',
+       f:[['客户','某电池厂 · 常熟工厂','ok'],['明细','6 行（来自 Excel 附件）','ok'],['数量','合计 1,840 件','ok'],['送达地点','常熟工厂原料库','ok'],['送达时间','11/25（未写具体时间）','warn']],res:'warn'}],
+  photo:[{ch:'照片',src:'手机拍照上传 · 张强',raw:'［照片］手写提货单\n嘉定零部件园  E-7781 座椅滑轨  6O 件\n提货时间 14:00–16:00',
+       f:[['客户','嘉定零部件园','ok'],['料号','E-7781 座椅滑轨','ok'],['数量','60 件（手写“6O”，置信度 82%）','warn'],['提货地点','嘉定零部件园','ok'],['提货时间','今天 14:00–16:00','ok']],res:'warn'}],
+};
+const EX_LS = ['监听到新消息','识别文字','提取字段','自动校验','完成'];
+const EX_CHC = {微信:C.green,邮件:C.blue,照片:C.orange};
+let exAutoT=null, exSeq=0;
+function exLiveState(){ if(!S.live) S.live={items:[],sel:null}; return S.live; }
+function exPush(kind){
+  const L=exLiveState(), pool=EX_MSGS[kind], m=pool[(exSeq++)%pool.length];
+  const it={...m,id:'ev'+exSeq,t:exNow(),stage:0}; L.items.unshift(it); L.items=L.items.slice(0,8); L.sel=it.id; exLiveUpdate();
+  const step=()=>{ if(it.stage>=4) return; it.stage++; exLiveUpdate(); setTimeout(step,700); }; setTimeout(step,700);
+}
+function exAutoStop(){ if(exAutoT){clearInterval(exAutoT);exAutoT=null;} }
+function exLiveInner(){
+  const L=exLiveState(), sel=L.items.find(x=>x.id===L.sel)||L.items[0];
+  const st = it=>it.stage<4?`<span class="pill p-acc">${EX_LS[it.stage]}…</span>`:it.res==='ok'?'<span class="pill p-ok">待复核写入</span>':it.res==='warn'?'<span class="pill p-warn">需人工核对</span>':'<span class="pill p-bad">缺项已拦截</span>';
+  return `<div class="ex-live">
+    <div class="panel"><div class="panel-h"><h3>订单来源</h3></div><div class="panel-b" style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn" type="button" data-exlive="wx"><span class="ex-dot" style="background:${C.green}"></span>模拟：微信群来了一条订单</button>
+      <button class="btn" type="button" data-exlive="mail"><span class="ex-dot" style="background:${C.blue}"></span>模拟：收到一封订单邮件</button>
+      <button class="btn" type="button" data-exlive="photo"><span class="ex-dot" style="background:${C.orange}"></span>模拟：司机拍照上传提货单</button>
+      <button class="btn ${exAutoT?'pri':''}" type="button" id="exAuto">${exAutoT?'⏸ 停止自动模拟':'▶ 自动模拟（每 5 秒一条）'}</button>
+      <div class="ex-note" style="margin-top:4px">正式环境中：邮箱由服务端实时收取，企业微信群通过机器人回调推送，照片从企业微信或网页上传。新消息一到就自动触发识别流程，无需人工点击。</div></div></div>
+    <div class="panel"><div class="panel-h"><h3>实时事件</h3><span class="ex-rec r">${exAutoT?'● 监听中':'○ 待命'}</span></div>
+      <div>${L.items.length?L.items.map(it=>`<button type="button" class="ex-ev ${sel&&sel.id===it.id?'on':''}" data-exsel="${it.id}">
+        <span class="ch" style="background:${EX_CHC[it.ch]}">${it.ch[0]}</span><span class="t"><b>${esc(it.src)}</b><small>${it.t} · ${esc(it.raw.split('\n')[0]).slice(0,26)}…</small>
+        <span class="ex-prog">${EX_LS.map((s,k)=>`<i class="${k<=it.stage?'on':''}"></i>`).join('')}</span></span>${st(it)}</button>`).join(''):'<div class="empty">点击左侧按钮，模拟一条订单到达</div>'}</div></div>
+    <div class="panel"><div class="panel-h"><h3>识别结果</h3>${sel?st(sel).replace('class="pill','class="r pill'):''}</div><div class="panel-b">${sel?`
+      <div class="raw" style="margin-bottom:10px">${esc(sel.raw)}</div>
+      ${sel.stage>=2?`<table><tr><th>字段</th><th>识别值</th><th></th></tr>${sel.f.map(f=>`<tr class="${sel.stage>=3&&f[2]==='bad'?'miss':''}"><td>${f[0]}</td><td>${esc(f[1])}</td><td>${sel.stage>=3?(f[2]==='ok'?'<span style="color:var(--ok)">✓</span>':f[2]==='warn'?'<span class="pill p-warn">核对</span>':'<span class="pill p-bad">缺项</span>'):'<span style="color:var(--faint)">…</span>'}</td></tr>`).join('')}</table>`:`<div class="empty">${EX_LS[sel.stage]}…</div>`}
+      ${sel.stage>=4?`<div class="ex-note" style="color:var(--muted)">${sel.res==='ok'?'字段齐全，已进入复核队列，订单专员确认后写入 OWTB。':sel.res==='warn'?'有字段需要人工确认，已在复核队列中标黄提示。':'缺少送达时间，已拦截，并起草回复：“王经理您好，请问明天几点前送到 3 号门？”'}</div>`:''}`
+      :'<div class="empty">还没有消息</div>'}</div></div></div>`;
+}
+function exLiveUpdate(){
+  const el=document.getElementById('exLive'); if(!el){exAutoStop();return}
+  el.innerHTML=exLiveInner();
+  el.querySelectorAll('[data-exlive]').forEach(b=>b.onclick=()=>exPush(b.dataset.exlive));
+  el.querySelectorAll('[data-exsel]').forEach(b=>b.onclick=()=>{S.live.sel=b.dataset.exsel;exLiveUpdate()});
+  const a=el.querySelector('#exAuto'); if(a) a.onclick=()=>{ if(exAutoT){exAutoStop();exLiveUpdate();return}
+    const kinds=['wx','mail','photo']; let k=0; exPush(kinds[k++%3]);
+    exAutoT=setInterval(()=>{ if(!document.getElementById('exLive')||S.ex!=='p1'){exAutoStop();return} exPush(kinds[k++%3]) },5000); exLiveUpdate(); };
+}
+
+/* 3. 试点一 */
+function exFlow(nodes){
+  return `<div class="ex-flow">${nodes.map((n,k)=>`${k?'<div class="ex-arrow">→</div>':''}<div class="ex-node ${n[4]?'human':''}"><div class="ic" style="${n[4]?'':`background:${n[3]}22;color:${n[3]}`}">${n[0]}</div><b>${n[1]}</b><p>${n[2]}</p>${n[4]?'<span class="ex-who-hu">人工</span>':'<span class="ex-who-ai">自动</span>'}</div>`).join('')}</div>`;
+}
+function exP1(){
+  return `<div class="panel ex-lead"><div class="big">📨</div><div><h2>订单自动入库：从“手工录单”到“只做复核”</h2>
+      <p>客户的订单散落在邮件、微信群和纸质提货单里，过去要专员逐字段录进订单系统。现在由智能体先读懂、填好、查一遍，专员只需要核对确认。</p></div></div>
+    <div class="ex-sec-t">现场演示：订单一到，自动识别 <small>（模拟数据，不连接真实系统）</small></div>
+    <div id="exLive">${exLiveInner()}</div>
+    <div class="ex-sec-t">一张订单的旅程</div>
+    ${exFlow([['收','收单','邮件、微信群、手机拍的纸质单，自动汇集到一个队列',C.blue],['识','识别','OCR 和视觉模型读出文字，手写单也能认',C.sky],['填','填字段','提取客户、料号、数量、送达时间、地点',C.teal],['查','自动检查','缺项拦截、与客户档案和料号表比对、查重复',C.vio],['核','人工复核','专员对照原文快速确认，可直接修改','',1],['入','写入系统','审批通过后写入 OWTB，并回执客户',C.green]])}
+    <div class="ex-sec-t">举个例子：一条微信消息 <small>（示意数据）</small></div>
+    <div class="panel panel-b ex-sample">
+      <div class="raw">安亭项目对接群 · 09:05<br><br>王经理：明天再加 <mark class="ex-m">200 套</mark>门板饰条 <mark class="ex-m">B-1180</mark>，送<mark class="ex-m">安亭总装 3 号门</mark>，还是老规矩。</div>
+      <div class="mid">→</div>
+      <div class="tbl-wrap"><table><tr><th>字段</th><th>识别结果</th><th>检查</th></tr>
+        <tr><td>客户</td><td>某主机厂 · 安亭总装</td><td><span class="pill p-ok">与档案一致</span></td></tr>
+        <tr><td>料号</td><td class="mono">B-1180 门板饰条</td><td><span class="pill p-ok">料号存在</span></td></tr>
+        <tr><td>数量</td><td>200 套</td><td><span class="pill p-ok">在常规范围</span></td></tr>
+        <tr><td>送达地点</td><td>安亭总装 3 号门</td><td><span class="pill p-ok">地址库匹配</span></td></tr>
+        <tr class="miss"><td>送达时间</td><td>只说了“明天”，没有具体时间</td><td><span class="pill p-bad">缺项 · 已拦截</span></td></tr></table></div>
+    </div>
+    <div class="ex-note">“老规矩”不会被瞎猜成某个时间。缺少关键信息时，智能体会停下来，并自动起草一条消息向客户确认，专员点一下就能发出。</div>
+    <div class="ex-sec-t">前后对比</div>
+    <div class="ex-vs">
+      <div class="panel before"><h4><span class="pill p-mute">以前</span>人工录单</h4><ul><li>在邮件、微信、纸单之间来回切换，逐个字段敲进系统</li><li>漏填送达时间、写错料号，到仓库才发现</li><li>同一单被两个人各录一遍，造成重复发货</li><li>出了问题很难查是谁、根据哪条消息录的</li></ul></div>
+      <div class="panel after"><h4><span class="pill p-ok">现在</span>智能体先做，专员复核</h4><ul><li>所有渠道的订单自动进入一个队列，字段已经填好</li><li>缺项、异常当场拦截，不会流到下游</li><li>每张单有唯一编号，重复提交只会写入一次</li><li>每个字段都能点回原文，责任清楚</li></ul>
+        <div class="ex-metric"><div><b class="num">≈ 6 → 1</b><span>分钟 / 单（目标）</span></div><div><b class="num">0</b><span>重复写入</span></div><div><b class="num">100%</b><span>写入前人工确认</span></div></div></div>
+    </div><div class="ex-note">指标为试点目标示意，以影子运行实测为准。</div>`;
+}
+
+/* 4. 试点二 */
+function exMap(){
+  const P = {dc:[60,150],a:[150,60],b:[230,40],c:[300,90],d:[280,180],e:[200,220],f:[120,230],g:[330,150]};
+  const xy = k=>P[k].join(',');
+  const pts = Object.entries(P).filter(([k])=>k!=='dc').map(([k,[x,y]])=>`<circle class="pt" cx="${x}" cy="${y}" r="6"/><text class="lbl" x="${x+9}" y="${y+4}">${k.toUpperCase()}</text>`).join('');
+  const base = `<path class="road" d="M20 120 H380 M20 200 H380 M100 20 V260 M260 20 V260"/><rect class="dc" x="${P.dc[0]-8}" y="${P.dc[1]-8}" width="16" height="16" rx="3"/><text class="lbl" x="${P.dc[0]-20}" y="${P.dc[1]+24}">嘉定集货点</text>`;
+  const before = `<svg viewBox="0 0 400 270" role="img" aria-label="人工排线示意"><title>人工排线：路线交叉、6 台车</title>${base}
+     <polyline class="r1" points="${xy('dc')} ${xy('c')} ${xy('a')}"/><polyline class="r1" points="${xy('dc')} ${xy('d')} ${xy('b')}"/><polyline class="r1" points="${xy('dc')} ${xy('f')} ${xy('g')}"/><polyline class="r1" points="${xy('dc')} ${xy('e')}"/>${pts}</svg>`;
+  const after = `<svg viewBox="0 0 400 270" role="img" aria-label="优化后路线示意"><title>求解器方案：路线不交叉、5 台车</title>${base}
+     <polyline class="r2" points="${xy('dc')} ${xy('a')} ${xy('b')}"/><polyline class="r3" points="${xy('dc')} ${xy('c')} ${xy('g')}"/><polyline class="r4" points="${xy('dc')} ${xy('f')} ${xy('e')} ${xy('d')}"/>${pts}</svg>`;
+  return `<div class="ex-g2"><div class="panel ex-map"><div class="panel-h"><h3>人工排线</h3><span class="pill p-mute r">示意</span></div><div class="panel-b">${before}<div class="ex-note">凭经验排，路线交叉、绕路，车辆多用。</div></div></div>
+    <div class="panel ex-map"><div class="panel-h"><h3>求解器方案 C（均衡）</h3><span class="pill p-ok r">示意</span></div><div class="panel-b">${after}<div class="ex-note">顺路合并，同时满足所有时间窗和限行条件。</div></div></div></div>`;
+}
+function exP2(){
+  return `<div class="panel ex-lead"><div class="big">🚚</div><div><h2>短驳路线优化：算法算方案，调度员做选择</h2>
+      <p>每天要把十几、几十张短驳单分配给有限的车辆，既要省钱又要准时，还要躲开限高限行。人脑很难同时兼顾这么多条件，这正是数学优化算法的强项。</p></div></div>
+    <div class="ex-sec-t">需要同时满足的条件</div>
+    <div class="ex-chips" style="gap:8px">${['🚛 车辆载重与车长','⏰ 客户收货时间窗','🚧 道路限高 / 限行','🏭 装卸口占用情况','👷 司机工作时长','💰 运输成本'].map(c=>`<span class="ex-chip" style="font-size:13px;padding:5px 12px">${c}</span>`).join('')}</div>
+    <div class="ex-sec-t">一次排线的流程</div>
+    ${exFlow([['入','汇总输入','当天短驳单、可用车辆、道路规则（只读）',C.blue],['算','求解器计算','约 12 秒给出 3 个都满足条件的方案',C.teal],['讲','大模型解读','用人话讲清每个方案的成本、准时率和风险',C.vio],['选','调度员选方案','对比后选择最合适的一个','',1],['批','主管审批','确认后才会派车','',1],['派','下发运输系统','自动生成派车单，防重复',C.green]])}
+    <div class="ex-sec-t">谁负责什么 <small>这是我们方案可靠的关键</small></div>
+    <div class="ex-duo"><div><h4><span class="pill p-vio">大模型</span>负责“听”和“说”</h4><ul><li>听懂调度员的问题和临时要求，比如“3 号门今天下午不收货”</li><li>把方案差异讲成人话，回答“为什么推荐 C”</li><li>不负责算路线，不会编造数字</li></ul></div>
+      <div><h4><span class="pill p-ok">求解器</span>负责“算”</h4><ul><li>成熟的运筹优化算法（OR-Tools），结果可复现</li><li>保证载重、时间窗、限行等硬条件 100% 满足</li><li>算不出可行方案时明确提示原因，而不是给个“差不多”的</li></ul></div></div>
+    <div class="ex-sec-t">效果示意</div>
+    ${exMap()}
+    <div class="ex-sec-t">三个候选方案</div>
+    <div class="tbl-wrap panel"><table><tr><th>方案</th><th>预计费用</th><th>车辆</th><th>预计准时率</th><th>满载率</th><th>说明</th></tr>
+      ${PLANS.map(p=>`<tr><td><b>${p.id} · ${p.name}</b> ${p.rec?'<span class="pill p-vio">推荐</span>':''}</td><td class="num">¥${fmt(p.cost)}</td><td class="num">${p.veh} 台</td><td class="num">${p.ontime}%</td><td class="num">${p.util}%</td><td style="color:var(--muted);min-width:220px">${p.note}</td></tr>`).join('')}</table></div>
+    <div class="ex-note">数据为演示示意。方案最终由调度员选择，提交审批后才下发运输系统。</div>`;
+}
+
+/* 5. 数据安全 */
+function exSec(){
+  const mx = [['销售经理','只读','—','—','—'],['订单专员','读 + 写（需审批）','只读','只读','—'],['运输调度','只读','读 + 写（需审批）','只读','—'],['结算专员','只读','只读','—','读 + 写（需审批）'],['运营总监','只读','只读','只读','只读 + 审批']];
+  const cell = v=>v==='—'?'<span style="color:var(--faint)">不可见</span>':v.includes('写')||v.includes('审批')?`<span class="pill p-warn">${v}</span>`:`<span class="pill p-ok">${v}</span>`;
+  return `<div class="panel ex-lead"><div class="big">🛡️</div><div><h2>数据留在公司里，每个人只看到该看的</h2>
+      <p>平台整体部署在企业自己的机房或私有云。大模型、知识库、业务数据都在内网运行，不依赖任何外部 AI 服务，也不会把数据发给第三方。</p></div></div>
+    <div class="ex-net">
+      <div class="ex-in"><div class="ex-in-grid">
+        ${[['员工','企业微信 SSO 登录'],['智能体平台','Dify 私有化部署'],['私有化大模型','Qwen，本地 GPU 运行'],['知识库','制度、SOP、合同'],['Bridge 安全网关','权限 · 审批 · 留痕'],['业务系统','OWTB · TMS · WMS · 结算']].map(b=>`<div class="ex-box"><b>${b[0]}</b><span>${b[1]}</span></div>`).join('')}
+      </div></div>
+      <div class="ex-out"><div class="x">✕</div><b>互联网 / 外部 AI 服务</b>业务数据不出域<br>外部无法访问平台</div>
+    </div>
+    <div class="ex-sec-t">四道保护</div>
+    <div class="ex-g4">
+      ${[['1','数据不出公司',C.green,'模型和数据都在内网，断开外网也能正常使用。'],['2','按岗位授权',C.blue,'每个人只能用本岗位的智能体，只能看本岗位的数据。'],['3','敏感信息脱敏',C.vio,'手机号、身份证、合同金额等在展示和日志中自动打码。'],['4','全程可追溯',C.orange,'谁、什么时间、问了什么、看了哪些数据、做了什么操作，全部记录。']]
+        .map(c=>`<div class="panel ex-card"><div class="ic" style="background:${c[2]}">${c[0]}</div><b>${c[1]}</b><p>${c[3]}</p></div>`).join('')}
+    </div>
+    <div class="ex-sec-t">谁能看到什么 <small>岗位权限示意</small></div>
+    <div class="panel tbl-wrap"><table class="ex-mx"><tr><th>岗位</th><th>订单数据</th><th>运输数据</th><th>仓储数据</th><th>结算数据</th></tr>
+      ${mx.map(r=>`<tr><td><b>${r[0]}</b></td>${r.slice(1).map(v=>`<td>${cell(v)}</td>`).join('')}</tr>`).join('')}</table></div>
+    <div class="ex-sec-t">越权会怎样？<small>审计记录示例</small></div>
+    <div class="panel panel-b"><div class="ex-log">
+      <div>07:58:19 · 周静（售前方案）→ 物流规划方案专家 → 请求读取「结算数据」</div>
+      <div style="color:var(--bad)">07:58:19 · Bridge：该岗位无结算数据权限 · 已拒绝 · 用时 0.1 秒</div>
+      <div>07:58:19 · 已记录审计日志，智能体回复：“你的岗位暂无结算数据权限，如需请联系管理员。”</div></div></div>`;
+}
+
+/* 6. 人工审批 */
+function exHitl(){
+  const ap = S.exAp;
+  return `<div class="panel ex-lead"><div class="big">✋</div><div><h2>智能体出主意，人来拍板</h2>
+      <p>按操作的风险高低分为三级。越是会改动业务数据的操作，越需要人来确认。智能体永远不能绕过审批直接写入业务系统。</p></div></div>
+    <div class="ex-g3">
+      <div class="panel ex-lv" style="border-top-color:var(--ok)"><div class="t"><span class="pill p-ok">L1</span><b>只看不动</b></div><p>查询、问答、分析。只读数据，不改动任何东西，直接回答。</p><div class="eg">例：制度问答、订单状态查询、库存分析</div></div>
+      <div class="panel ex-lv" style="border-top-color:var(--accent)"><div class="t"><span class="pill p-acc">L2</span><b>给方案，人来选</b></div><p>智能体给出几个候选方案和依据，由人选择，选定后再走审批执行。</p><div class="eg">例：短驳路线优化、智能拆单、运费核算</div></div>
+      <div class="panel ex-lv" style="border-top-color:var(--warn)"><div class="t"><span class="pill p-warn">L3</span><b>写入系统，必须审批</b></div><p>智能体可以把数据准备好，但每一次写入业务系统都必须经过人工复核和审批。</p><div class="eg">例：订单写入 OWTB、派车下发 TMS、账单申诉</div></div>
+    </div>
+    <div class="ex-sec-t">一次审批的流程</div>
+    ${exFlow([['备','智能体准备','整理好要写入的内容和依据',C.blue],['卡','生成审批单','写清楚做什么、为什么、影响多大',C.vio],['批','负责人审批','通过或驳回，可附意见','',1],['执','网关执行','带唯一编号，只执行一次',C.teal],['记','留痕归档','全过程可查、可回放',C.green]])}
+    <div class="ex-sec-t">试一试：你就是审批人 <small>（演示，不会真正执行）</small></div>
+    <div class="ex-g2" style="align-items:start">
+      <div class="panel ex-apcard"><div class="hd">📝 审批单 AP-1093 · 订单写入 OWTB <span class="pill ${ap==='ok'?'p-ok':ap==='no'?'p-bad':'p-warn'}" style="margin-left:auto">${ap==='ok'?'已通过':ap==='no'?'已驳回':'待审批'}</span></div>
+        <div class="bd"><div class="row"><span>发起</span><span>多模态订单自动入库 · 王芳复核</span></div><div class="row"><span>内容</span><span>某主机厂 · 安亭总装 · 2 个料号 · 11/22 10:00 前送达</span></div>
+          <div class="row"><span>依据</span><span>客户邮件 08:41（可点开原文）· 字段全部校验通过</span></div><div class="row"><span>影响</span><span>新增 1 张订单，不修改已有数据</span></div>
+          <div class="row"><span>防重编号</span><span class="mono">idem-ord-7f3a21</span></div></div>
+        <div class="ft">${ap?`<button class="btn sm" type="button" data-exap="">重置演示</button>`:`<button class="btn pri" type="button" data-exap="ok">通过</button><button class="btn danger" type="button" data-exap="no">驳回</button><span style="font-size:12px;color:var(--muted)">点一下看看会发生什么</span>`}</div></div>
+      <div class="panel panel-b"><div style="font-size:12px;color:var(--faint);margin-bottom:8px">系统记录</div><div class="ex-log">
+        <div>08:41:20 · 收到客户邮件，识别为订单</div><div>08:41:22 · 字段校验通过，进入复核队列</div><div>08:52:07 · 王芳复核确认，提交审批 AP-1093</div>
+        ${ap==='ok'?`<div class="ok">${exNow()} · 审批通过</div><div class="ok">${exNow()} · Bridge 写入 OWTB：SO-20261121-0110</div><div>${exNow()} · 同一编号再次提交 → 识别为重复，已忽略</div><div>${exNow()} · 已回执客户，审计归档</div>`:ap==='no'?`<div style="color:var(--bad)">${exNow()} · 审批驳回：意见“数量需与客户再确认”</div><div>${exNow()} · 未写入任何数据，已通知王芳</div>`:'<div style="color:var(--faint)">等待审批…</div>'}
+      </div></div>
+    </div>
+    <div class="panel panel-b" style="margin-top:14px;display:flex;gap:12px;align-items:flex-start"><span style="font-size:22px">📦</span><div><b>什么是“防重编号”？</b><div style="color:var(--muted);font-size:13px;margin-top:2px">就像快递单号：同一个单号只能寄一次。即使网络卡顿、有人连点两次，系统看到同一个编号也只会执行一次，避免重复下单、重复派车。</div></div></div>`;
+}
+function exNow(){const d=new Date();return [d.getHours(),d.getMinutes(),d.getSeconds()].map(n=>String(n).padStart(2,'0')).join(':')}
+
+function bindExplain(root){
+  root.querySelectorAll('[data-ex]').forEach(b=>b.onclick=()=>{exStop();S.ex=b.dataset.ex;S.exStep=0;exRender();(S.exStandalone?window:$('#main')).scrollTo?.(0,0);$('#main').scrollTop=0;window.scrollTo(0,0)});
+  root.querySelectorAll('[data-exstep]').forEach(b=>b.onclick=()=>{exStop();S.exStep=+b.dataset.exstep;exRender()});
+  root.querySelectorAll('[data-exph]').forEach(b=>b.onclick=()=>{S.exPh=+b.dataset.exph;exRender()});
+  root.querySelectorAll('[data-exma]').forEach(b=>b.onclick=()=>{S.exMa=b.dataset.exma;exRender()});
+  if(root.querySelector('#exLive')) exLiveUpdate(); else exAutoStop();
+  root.querySelectorAll('[data-exap]').forEach(b=>b.onclick=()=>{S.exAp=b.dataset.exap||null;exRender()});
+  const p=root.querySelector('#exPlay'); if(p) p.onclick=()=>{
+    if(exTimer){exStop();exRender();return}
+    if((S.exStep||0)>=5) S.exStep=0;
+    exTimer=setInterval(()=>{ const on = S.ex==='req' && (S.exStandalone || S.page==='explain');
+      if(!on){exStop();return} if(S.exStep>=5){exStop();exRender();return} S.exStep++; exRender(); },2800);
+    exRender()};
+  const e=root.querySelector('#exEnter'); if(e) e.onclick=()=>{exStop();S.exStandalone=false;renderLogin();window.scrollTo(0,0)};
+}
+function renderExplainStandalone(){
+  S.exStandalone=true; $('#app').hidden=true; const L=$('#login'); L.hidden=false;
+  L.innerHTML = `<div class="ex-standalone"><div class="ex-top"><div class="brand"><div class="logo">群智</div><div><b>群智通智能体</b><small>QUNZHITONG AIOS · 平台原理讲解</small></div></div>
+    <button class="btn" type="button" id="exBack">← 返回选择身份</button></div>${pExplain()}</div>`;
+  $('#exBack').onclick=()=>{exStop();S.exStandalone=false;renderLogin();window.scrollTo(0,0)};
+  bindExplain(L);
 }
 
 /* 启动 */
